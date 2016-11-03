@@ -1,0 +1,32 @@
+== Vulkan support on Chromium OS ==
+
+Homepage: https://github.com/chadversary/chromiumos-vulkan-docs
+Git-Url: git://github.com/chadversary/chromiumos-vulkan-docs
+
+Lots to say here...
+
+TODO: Maybe move this discussion material to a Google doc until it's finalized?
+
+Rough Goals:
+    - Support importing dma_bufs as VkDeviceMemory.
+    - Just as VkDeviceMemory and VkImage are decoupled in the core Vulkan API,
+      preserve the decoupling for external VkDeviceMemory and external VkImage
+      also.
+    - Support creation of VkImages using VkImageCreateInfo extended with DRM
+      modifiers. This keeps information such as tiling and compression formats
+      explicit.
+    - Support creation of external VkImages that have driver-private auxiliary
+      memory in addition to the usual primary image memory. Compressed color
+      images often require this.
+    - Support binding VkImages to dma_buf-imported VkDeviceMemory.
+    - Permit the sharing of external mipmapped, array, and multisample images
+      in the API; even if the current extensions don't specify and/or allow it.
+      We don't need to define all the rules right now for sharing complex
+      images; but we should design an API that allows it when we're eventually
+      ready to define those rules.
+    - Support sharing VkImages between a fixed producer/consumer pair. The
+      obvious use case is compositor and client.
+    - Support sharing VkImages among multiple consumers and producers, such as
+      in a star toplogy.
+    - Require that any moment there must exist exactly one owner of the
+      external image. Only the owner may read and write the image.

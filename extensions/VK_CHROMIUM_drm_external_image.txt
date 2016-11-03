@@ -1,0 +1,157 @@
+Name Strings
+
+    VK_CHROMIUM_drm_external_image
+
+Extension Type
+
+    Device Extension
+
+Registered Extension Number
+
+    Draft
+
+Status
+
+    Draft
+
+Version
+
+    0 (Early Draft)
+
+Last Modified Date
+
+    See git log.
+
+IP Status
+
+    No known IP claims.
+
+Dependencies
+
+    This extension is written against the Vulkan 1.0.32 specification [1].
+
+Contributors
+
+    Chad Versace, Google
+
+Contact
+
+    Chad Versace <chadversary@chromium.org>
+
+Overview
+
+    TODO
+
+New Object Types
+
+    None
+
+New Enum Constants
+
+    Extends VkStructureType
+        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM
+        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM
+        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM
+        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM
+
+    Extends VkImageTiling
+        VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
+
+    Extends VkImageLayout
+        VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM
+
+    Extends VkAccessFlagBits
+        VK_ACCESS_DRM_EXTERNAL_CHROMIUM
+
+New Enums
+
+    None
+
+New Structs
+
+    typedef struct VkDrmExternalImageAbiCHROMIUM {
+        VkStructureType                             sType;
+        const void*                                 pNext;
+        uint32_t                                    vendor;
+        uint32_t                                    version;
+
+    } VkDrmExternalImageAbiCHROMIUM;
+
+    typedef struct VkDrmExternalImageLayoutCHROMIUM {
+        VkStructureType                             sType;
+        const void*                                 pNext;
+        const VkDrmExternalImageAbiCHROMIUM*        abi;
+        uint32_t                                    drmFourCC;
+        uint64_t                                    drmModifier;
+    } VkDrmExternalImageLayoutCHROMIUM;
+
+    // Extends VkImageCreateInfo
+    typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
+        VkStructureType                             sType;
+        const void*                                 pNext;
+        const VkDrmExternalImageLayoutCHROMIUM*     externalLayout;
+    } VkDrmExternalImageCreateInfoCHROMIUM;
+
+    // Extends VkImageMemoryBarrier
+    typedef struct VkDrmExternalImageMemoryBarrierCHROMIUM {
+        VkStructureType                             sType;
+        const void*                                 pNext;
+        const VkDrmExternalImageLayoutCHROMIUM*     oldLayout;
+        const VkDrmExternalImageLayoutCHROMIUM*     newLayout;
+    } VkExternalDrmImageMemoryBarrierCHROMIUM;
+
+New Functions
+
+    TODO:
+        - Queries to determine support for external image layouts (and possibly
+          memory-bound external images too) on particular physical devices and
+          queue families.
+
+Description
+
+    TODO:
+        - Discuss usage.
+        - Define semantics of acquire/release ownership transitions for external images.
+        - Discuss suggested usage of semaphores and image memory barriers
+          during ownership transitions.
+        - Discuss relationship to VK_CHROMIUM_dma_buf_memory_import.
+        - Discuss relationship with external semaphores, which are not defined
+          by this extension.
+
+Issues
+
+    0. Needed work:
+
+        - Define semantics for acquire/release.
+        - Layout transitions for acquire/release?
+        - Discuss how a layered extension may define the source and target of
+          acquire and release.
+
+    1. How does the application determine valid values for VkImageCreateInfo
+       that can be paired with the dma_buf-imported VkDeviceMemory?
+
+       Proposed Solution: This topic is sufficiently complex that it lies
+       outside the scope of this extension. Implementations are encouraged to
+       solve this issue with layered extensions or with additional APIs and
+       protocols outside Vulkan.
+
+    2. What about planar formats?
+
+       Proposed Solution: Defer it to a future extension.
+
+    3. How does the user determine which physical devices and queue families
+       are capable of acquiring and releasing ownership of specific external
+       images and/or external image layouts?
+
+       TBD.
+
+       Proposed Solution: Defer it to a future extension. On systems that lack
+       such an extension, permit implicitly defined system-specific behavior.
+
+References
+
+    [1]: https://github.com/KhronosGroup/Vulkan-Docs/tree/v1.0-core-20161025
+
+Version History
+
+    See git log.

@@ -1,0 +1,94 @@
+Name Strings
+
+    VK_CHROMIUM_dma_buf_memory_import
+
+Extension Type
+
+    Device Extension
+
+Registered Extension Number
+
+    Draft
+
+Status
+
+    Draft
+
+Version
+
+    0 (Early Draft)
+
+Last Modified Date
+
+    See git log.
+
+IP Status
+
+    No known IP claims.
+
+Dependencies
+
+    This extension is written against the Vulkan 1.0.32 specification [1].
+
+Contributors
+
+    Chad Versace, Google
+
+Contact
+
+    Chad Versace <chadversary@chromium.org>
+
+Overview
+
+    TODO
+
+New Object Types
+
+    None
+
+New Enum Constants
+
+    VK_STRUCTURE_TYPE_DMA_BUF_MEMORY_IMPORT_INFO_CHROMIUM
+
+New Enums
+
+    None
+
+New Structs
+
+    // Parameter to vkImportDmaBufMemoryCHROMIUM
+    typedef struct VkDmaBufMemoryImportInfoCHROMIUM {
+        VkStructureType                             sType;
+        const void*                                 pNext;
+        int                                         fd;
+        VkDeviceSize                                size;
+    } VkDmaBufMemoryImportInfoCHROMIUM;
+
+New Functions
+
+    VkResult vkImportDmaBufMemoryCHROMIUM(
+        VkDevice                                    device,
+        const VkDmaBufMemoryImportInfoCHROMIUM*     pImportInfo,
+        const VkAllocationCallbacks*                pAllocator,
+        VkDeviceMemory*                             pMemory);
+
+Description
+
+    TODO
+        - Describe usage.
+        - Describe expected failure modes.
+
+    Rough Notes:
+        - vkMapMemory is illegal on dma_buf-imported VkDeviceMemory.
+
+Issues
+
+    None
+
+References
+
+    [1]: https://github.com/KhronosGroup/Vulkan-Docs/tree/v1.0-core-20161025
+
+Version History
+
+    See git log.
