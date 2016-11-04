@@ -170,7 +170,6 @@ example_acquire_external_drm_image(
     // layout to a normal Vulkan layout.
     const VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .pNext = external_layout, // XXX
         .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -185,6 +184,13 @@ example_acquire_external_drm_image(
             .levelCount = 1,
             .baseArrayLayer = 0,
             .layerCount = 1,
+        },
+
+        .pNext = &(VkDrmExternalImageMemoryBarrierCHROMIUM) {
+            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM,
+            .pNext = NULL,
+            .oldLayout = external_layout,
+            .newLayout = NULL,
         },
     };
 
@@ -260,7 +266,6 @@ example_release_external_drm_image(
     // releasing ownership to the next owner.
     const VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .pNext = external_layout, // XXX
         .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -275,6 +280,13 @@ example_release_external_drm_image(
             .levelCount = 1,
             .baseArrayLayer = 0,
             .layerCount = 1,
+        },
+
+        .pNext = &(VkDrmExternalImageMemoryBarrierCHROMIUM) {
+            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM,
+            .pNext = NULL,
+            .oldLayout = NULL,
+            .newLayout = external_layout,
         },
     };
 

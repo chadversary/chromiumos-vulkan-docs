@@ -96,7 +96,7 @@ typedef struct VkDrmExternalImageMemoryBarrierCHROMIUM {
     const void*                                 pNext;
     const VkDrmExternalImageLayoutCHROMIUM*     oldLayout;
     const VkDrmExternalImageLayoutCHROMIUM*     newLayout;
-} VkExternalDrmImageMemoryBarrierCHROMIUM;
+} VkDrmExternalImageMemoryBarrierCHROMIUM;
 
 // TODO: Functions that query support for external images and layouts.
 
