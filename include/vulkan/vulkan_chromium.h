@@ -62,7 +62,6 @@ VKAPI_ATTR VkResult VKAPI_CALL vkImportDmaBufMemoryCHROMIUM(
 #define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM ((VkStructureType) 0) // TODO
-#define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM ((VkImageTiling) 0) // TODO
 #define VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM ((VkImageLayout) 0) // TODO
 #define VK_ACCESS_DRM_EXTERNAL_CHROMIUM ((VkAccessFlagBits) 0) // TODO
@@ -89,14 +88,6 @@ typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
     const void*                                 pNext;
     const VkDrmExternalImageLayoutCHROMIUM*     externalLayout;
 } VkDrmExternalImageCreateInfoCHROMIUM;
-
-// Extends VkImageMemoryBarrier
-typedef struct VkDrmExternalImageMemoryBarrierCHROMIUM {
-    VkStructureType                             sType;
-    const void*                                 pNext;
-    const VkDrmExternalImageLayoutCHROMIUM*     oldLayout;
-    const VkDrmExternalImageLayoutCHROMIUM*     newLayout;
-} VkDrmExternalImageMemoryBarrierCHROMIUM;
 
 // TODO: Functions that query support for external images and layouts.
 

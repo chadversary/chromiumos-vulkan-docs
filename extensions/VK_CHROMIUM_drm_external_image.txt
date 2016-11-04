@@ -52,7 +52,6 @@ New Enum Constants
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM
-        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM
 
     Extends VkImageTiling
         VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
@@ -91,14 +90,6 @@ New Structs
         const void*                                 pNext;
         const VkDrmExternalImageLayoutCHROMIUM*     externalLayout;
     } VkDrmExternalImageCreateInfoCHROMIUM;
-
-    // Extends VkImageMemoryBarrier
-    typedef struct VkDrmExternalImageMemoryBarrierCHROMIUM {
-        VkStructureType                             sType;
-        const void*                                 pNext;
-        const VkDrmExternalImageLayoutCHROMIUM*     oldLayout;
-        const VkDrmExternalImageLayoutCHROMIUM*     newLayout;
-    } VkExternalDrmImageMemoryBarrierCHROMIUM;
 
 New Functions
 

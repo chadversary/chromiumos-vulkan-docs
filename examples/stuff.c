@@ -113,10 +113,42 @@ example_bind_dma_buf_image(
     VkResult res;
     VkFormat format = get_vk_format_for_drm_fourcc(external_layout->drmFourCC);
 
+    // Create an external VkImage. Observe that the image, like any
+    // non-external VkImage, is initially unbound to memory; that
+    // VkDrmExternalImageCreateInfoCHROMIUM extends VkImageCreateInfo; and that
+    // 'initialLayout' and 'tiling' refer to VkDrmExternalImageCreateInfoCHROMIUM.
+    //
+    // TODO: Move the below text to the extension specs.
+    //
+    // An "external image" is any VkImage created with
+    // VkImageCreateInfo::initalLayout ==
+    // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM.  The image's external layout is
+    // defined by VkDrmExternalImageCreateInfoCHROMIUM.
+    //
+    // An external image has two layouts at all times: an external layout,
+    // which was defined during image creation and is immutable; and a current
+    // layout, which can be either the image's external layout, referenced by
+    // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM, or a normal Vulkan layout, such
+    // as VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL.
+    //
+    // When the image's current layout is a non-external layout, Vulkan "owns"
+    // the image and can access it as if it were a normal, non-external image.
+    // When the image's current layout is an external layout, the image is
+    // "externally owned". When the image is externally owned, access to the
+    // image is severely restricted.  Work submitted to a queue must not access
+    // an externally owned image except work that transitions the image from
+    // its external layout to a non-external layout (for example, a transition
+    // effected by VkAttachmentReference::layout or by vkCmdPipelineBarrier).
+    //
+    // Vulkan "acquires ownership" of the image when it transitions from an
+    // external to a non-external layout. Conversely, Vulkan "releases
+    // ownership" of the image when it transitions from a non-external layout
+    // to an external layout.
+    //
     res = vkCreateImage(dev,
             &(VkImageCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                .pNext = external_layout, // XXX
+                .pNext = external_layout,
                 .flags = 0,
                 .imageType = VK_IMAGE_TYPE_2D,
                 .format = format,
@@ -138,6 +170,9 @@ example_bind_dma_buf_image(
             external_image);
     check_vk_result(res);
 
+    // To bind a VkImage to a dma_buf-imported VkDeviceMemory, the image must
+    // have been created with
+    //     VkImageCreateInfo::initialLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM.
     res = vkBindImageMemory(dev, *external_image, dma_buf_memory, offset);
     check_vk_result(res);
 }
@@ -149,7 +184,6 @@ example_acquire_external_drm_image(
         uint32_t queue_family_index,
         VkCommandBuffer cmd,
         VkImage external_image,
-        const VkDrmExternalImageLayoutCHROMIUM *external_layout,
         VkSemaphore acquire_semaphore) {
     VkResult res;
 
@@ -162,14 +196,15 @@ example_acquire_external_drm_image(
             });
     check_vk_result(res);
 
-    // The image's previous external owner last accessed the image using an
-    // external layout. That owner passed a description of that external layout
-    // to us using some external API, perhaps over IPC. Now we are the image's
-    // owner. Despite being the current owner, we must not access the image's
-    // memory with Vulkan until we transition the image from that external
-    // layout to a normal Vulkan layout.
+    // This barrier acquires ownership of the image through a layout
+    // transition.  The source layout is the external layout defined by
+    // VkDrmExternalImageCreateInfoCHROMIUM::externalLayout; the destination
+    // layout is a normal Vulkan layout.
+    //
+    // Observe that 'srcAccessMask' and 'oldLayout' refer to external usage.
     const VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .pNext = NULL,
         .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -184,13 +219,6 @@ example_acquire_external_drm_image(
             .levelCount = 1,
             .baseArrayLayer = 0,
             .layerCount = 1,
-        },
-
-        .pNext = &(VkDrmExternalImageMemoryBarrierCHROMIUM) {
-            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM,
-            .pNext = NULL,
-            .oldLayout = external_layout,
-            .newLayout = NULL,
         },
     };
 
@@ -242,7 +270,6 @@ example_release_external_drm_image(
         uint32_t queue_family_index,
         VkCommandBuffer cmd,
         VkImage external_image,
-        const VkDrmExternalImageLayoutCHROMIUM *external_layout,
         VkSemaphore release_semaphore)
 {
     VkResult res;
@@ -258,14 +285,15 @@ example_release_external_drm_image(
 
     draw_stuff(cmd);
 
-    // We are the external image's current owner, and the image's current
-    // layout is a normal Vulkan layout.  During some initial negotiation
-    // phase, the next owner provided us a set of external layouts through
-    // which it is able to access the image. We must transition the image from
-    // its current layout to one of the pre-negotiated external layouts before
-    // releasing ownership to the next owner.
+    // This barrier releases ownership of the image through a layout
+    // transition.  The source layout is a normal Vulkan layout; the
+    // destination layout the external layout defined by
+    // VkDrmExternalImageCreateInfoCHROMIUM::externalLayout.
+    //
+    // Observe that 'dstAccessMask' and 'newLayout' refer to external usage.
     const VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .pNext = NULL,
         .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -280,13 +308,6 @@ example_release_external_drm_image(
             .levelCount = 1,
             .baseArrayLayer = 0,
             .layerCount = 1,
-        },
-
-        .pNext = &(VkDrmExternalImageMemoryBarrierCHROMIUM) {
-            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_BARRIER_CHROMIUM,
-            .pNext = NULL,
-            .oldLayout = NULL,
-            .newLayout = external_layout,
         },
     };
 
