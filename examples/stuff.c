@@ -55,34 +55,6 @@ draw_stuff(VkCommandBuffer cmd)
 }
 
 static void unused
-example_dma_buf_image_layout(void)
-{
-    VkDrmExternalImageLayoutCHROMIUM layout unused = {
-        // Required when binding an image to dma_buf-imported memory.
-        //
-        // Observe that this struct omits stride. Stride is omitted
-        // because it's meaningless for many layouts, such as layouts
-        // that contain auxiliary surfaces. The ABI version defines the
-        // stride.
-        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM,
-        .pNext = NULL,
-        .abi = &(VkDrmExternalImageAbiCHROMIUM) {
-            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM,
-            .pNext = NULL,
-
-            // Vendors are defined drm_fourcc.h.
-            .vendor = DRM_FORMAT_MOD_VENDOR_INTEL,
-
-            // The ABI is defined separately by each vendor and is a
-            // driver-private detail.
-            .version = 1,
-        },
-        .drmFourCC = DRM_FORMAT_RGBA8888,
-        .drmModifier = I915_FORMAT_MOD_Yf_TILED,
-    };
-}
-
-static void unused
 example_import_dma_buf_memory(VkDevice dev, int fd, size_t size,
                               VkDeviceMemory *mem)
 {
@@ -107,11 +79,42 @@ example_bind_dma_buf_image(
         size_t offset,
         uint32_t width,
         uint32_t height,
-        const VkDrmExternalImageLayoutCHROMIUM *external_layout,
         VkImage *external_image)
 {
     VkResult res;
-    VkFormat format = get_vk_format_for_drm_fourcc(external_layout->drmFourCC);
+
+    // This example hard-codes the image's external layout.  In real usage, the
+    // image's external layout, as well as its offset into the dma_buf, would
+    // be negotiated between the consumer and producer during an initial setup
+    // phase.
+    const VkDrmExternalImageCreateInfoCHROMIUM external_info = {
+        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM,
+        .pNext = NULL,
+        .externalLayout = &(VkDrmExternalImageLayoutCHROMIUM) {
+            // Observe that this struct omits stride. Stride is omitted
+            // because it's meaningless for many layouts, such as layouts
+            // that contain auxiliary surfaces. The ABI version defines the
+            // stride.
+            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM,
+            .pNext = NULL,
+            .abi = &(VkDrmExternalImageAbiCHROMIUM) {
+                .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM,
+                .pNext = NULL,
+
+                // Vendors are defined in drm_fourcc.h.
+                .vendor = DRM_FORMAT_MOD_VENDOR_INTEL,
+
+                // The ABI is defined separately by each vendor and is a
+                // driver-private detail.
+                .version = 1,
+            },
+            .drmFourCC = DRM_FORMAT_RGBA8888,
+            .drmModifier = I915_FORMAT_MOD_Yf_TILED,
+        },
+    };
+
+    VkFormat format = get_vk_format_for_drm_fourcc(
+            external_info.externalLayout->drmFourCC);
 
     // Create an external VkImage. Observe that the image, like any
     // non-external VkImage, is initially unbound to memory; that
@@ -148,7 +151,7 @@ example_bind_dma_buf_image(
     res = vkCreateImage(dev,
             &(VkImageCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                .pNext = external_layout,
+                .pNext = &external_info,
                 .flags = 0,
                 .imageType = VK_IMAGE_TYPE_2D,
                 .format = format,
