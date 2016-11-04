@@ -181,7 +181,7 @@ example_bind_dma_buf_image(
 }
 
 static void unused
-example_acquire_external_drm_image(
+example_acquire_external_image_with_pipeline_barrier(
         VkDevice dev,
         VkQueue queue,
         uint32_t queue_family_index,
@@ -267,7 +267,7 @@ example_acquire_external_drm_image(
 }
 
 static void unused
-example_release_external_drm_image(
+example_release_external_image_with_pipeline_barrier(
         VkDevice dev,
         VkQueue queue,
         uint32_t queue_family_index,
