@@ -226,7 +226,8 @@ example_acquire_external_image_with_pipeline_barrier(
     };
 
     vkCmdPipelineBarrier(cmd,
-        /*srcStageMask*/ VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, // TODO: Maybe allow something looser?
+        // TODO: Maybe allow a looser srcStageMask?
+        /*srcStageMask*/ VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
         /*dstStageMask*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         /*dependencyFlags*/ 0,
         /*memoryBarrierCount*/ 0,
@@ -314,8 +315,9 @@ example_release_external_image_with_pipeline_barrier(
     };
 
     vkCmdPipelineBarrier(cmd,
+        // TODO: Maybe allow a looser dstStageMask?
         /*srcStageMask*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        /*dstStageMask*/ VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, // TODO: Maybe allow something looser?
+        /*dstStageMask*/ VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
         /*dependencyFlags*/ 0,
         /*memoryBarrierCount*/ 0,
         /*pMemoryBarriers*/ NULL,
