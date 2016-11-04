@@ -1,2 +1,9 @@
 - Discuss the big picture. What is flow between the KMS, gbm, Vulkan, Chromium
   OS's Ozone compositor?
+
+- How does the user query which queues and images support dma_buf-imported memory?
+
+- In transition from external layout to non-external layout, allow user to
+  indicate if content should be preserved or invalidated, similar to how
+  VK_IMAGE_LAYOUT_UNDEFINED and VK_IMAGE_LAYOUT_PREINITIALIZED are used in core
+  Vulkan. This requires a rework of VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM.
