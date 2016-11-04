@@ -353,3 +353,317 @@ example_release_external_image_with_pipeline_barrier(
             /*fence*/ VK_NULL_HANDLE);
     check_vk_result(res);
 }
+
+static void unused
+example_acquire_external_image_with_subpass_transition(
+        VkDevice dev,
+        VkQueue queue,
+        uint32_t queue_family_index,
+        VkCommandBuffer cmd,
+        VkImageView external_image_view,
+        uint32_t view_width,
+        uint32_t view_height,
+        VkSemaphore acquire_semaphore)
+{
+    VkResult res;
+    VkRenderPass pass;
+    VkFramebuffer framebuffer;
+
+    res = vkCreateRenderPass(dev,
+            &(VkRenderPassCreateInfo) {
+                .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+                .pNext = NULL,
+                .flags = 0,
+                .attachmentCount = 1,
+                .pAttachments = (VkAttachmentDescription[]) {
+                    {
+                        .flags = 0,
+                        .format = VK_FORMAT_R8G8B8A8_UNORM,
+                        .samples = 1,
+                        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                        .initialLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+                        .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    },
+                },
+                .subpassCount = 1,
+                .pSubpasses = (VkSubpassDescription[]) {
+                    {
+                        .flags = 0,
+                        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        .inputAttachmentCount = 0,
+                        .pInputAttachments = NULL,
+                        .colorAttachmentCount = 1,
+                        .pColorAttachments = (VkAttachmentReference[]) {
+                            {
+                                // This layout transition acquires ownership of
+                                // the external image.  The Vulkan 1.0 spec
+                                // ensures that the image transitions from the
+                                // previous layout
+                                // (VkAttachmentDescription::initialLayout =
+                                // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM) to
+                                // the subpass's layout before the subpass
+                                // begins execution.
+                                .attachment = 0,
+                                .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            },
+                        },
+                        .pResolveAttachments = NULL,
+                        .pDepthStencilAttachment = NULL,
+                        .preserveAttachmentCount = 0,
+                        .pPreserveAttachments = NULL,
+                    },
+                },
+                .dependencyCount = 1,
+                .pDependencies = (VkSubpassDependency[]) {
+                    {
+                        // TODO: To ensure a well-defined transition from
+                        // external layout to non-external layout, is an
+                        // explicit VkSubpassDependency really required? I'm
+                        // (chadv) unsure because Vulkan is hard.
+                        //
+                        // TODO: Maybe allow a looser srcStageMask?
+                        .srcSubpass = VK_SUBPASS_EXTERNAL,
+                        .srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                        .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
+
+                        .dstSubpass = 0, // this subpass
+                        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+
+                        // VK_DEPENDENCY_BY_REGION_BIT is illegal for external images.
+                        .dependencyFlags = 0,
+                    },
+                },
+            },
+            /*pAllocator*/ NULL,
+            &pass);
+    check_vk_result(res);
+
+    res = vkCreateFramebuffer(dev,
+            &(VkFramebufferCreateInfo) {
+                .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                .pNext = NULL,
+                .flags = 0,
+                .renderPass = pass,
+                .attachmentCount = 1,
+                .pAttachments = (VkImageView[]) {
+                    external_image_view,
+                },
+                .width = view_width,
+                .height = view_height,
+                .layers = 1,
+            },
+            /*pAllocator*/ NULL,
+            &framebuffer);
+    check_vk_result(res);
+
+    res = vkBeginCommandBuffer(cmd,
+            &(VkCommandBufferBeginInfo) {
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                .pNext = NULL,
+                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+                .pInheritanceInfo = NULL,
+            });
+    check_vk_result(res);
+
+    vkCmdBeginRenderPass(cmd,
+            &(VkRenderPassBeginInfo) {
+                .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+                .pNext = NULL,
+                .renderPass = pass,
+                .framebuffer = framebuffer,
+                .renderArea = (VkRect2D) {
+                    .offset = { 0, 0 },
+                    .extent = { view_width, view_height },
+                },
+                .clearValueCount = 0,
+                .pClearValues = NULL,
+            },
+            VK_SUBPASS_CONTENTS_INLINE);
+
+    draw_stuff(cmd);
+
+    vkCmdEndRenderPass(cmd);
+
+    res = vkEndCommandBuffer(cmd);
+    check_vk_result(res);
+
+    res = vkQueueSubmit(queue,
+            /*submitCount*/ 1,
+            (VkSubmitInfo[]) {
+                {
+                    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                    .pNext = NULL,
+                    .waitSemaphoreCount = 1,
+                    .pWaitSemaphores = (VkSemaphore[]) {
+                        acquire_semaphore,
+                    },
+                    .pWaitDstStageMask = (VkPipelineStageFlags[]) {
+                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    },
+                    .commandBufferCount = 1,
+                    .pCommandBuffers = (VkCommandBuffer[]) {
+                        cmd,
+                    },
+                    .signalSemaphoreCount = 0,
+                    .pSignalSemaphores = NULL,
+                },
+            },
+            /*fence*/ VK_NULL_HANDLE);
+    check_vk_result(res);
+}
+
+static void unused
+example_release_external_image_with_subpass_transition(
+        VkDevice dev,
+        VkQueue queue,
+        uint32_t queue_family_index,
+        VkCommandBuffer cmd,
+        VkImageView external_image_view,
+        uint32_t view_width,
+        uint32_t view_height,
+        VkSemaphore release_semaphore)
+{
+    VkResult res;
+    VkRenderPass pass;
+    VkFramebuffer framebuffer;
+
+    res = vkCreateRenderPass(dev,
+            &(VkRenderPassCreateInfo) {
+                .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+                .pNext = NULL,
+                .flags = 0,
+                .attachmentCount = 1,
+                .pAttachments = (VkAttachmentDescription[]) {
+                    {
+                        .flags = 0,
+                        .format = VK_FORMAT_R8G8B8A8_UNORM,
+                        .samples = 1,
+                        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+
+                        // This layout transition releases ownership of the
+                        // external image.
+                        .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                        .finalLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+                    },
+                },
+                .subpassCount = 1,
+                .pSubpasses = (VkSubpassDescription[]) {
+                    {
+                        .flags = 0,
+                        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+                        .inputAttachmentCount = 0,
+                        .pInputAttachments = NULL,
+                        .colorAttachmentCount = 1,
+                        .pColorAttachments = (VkAttachmentReference[]) {
+                            {
+                                .attachment = 0,
+                                .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                            },
+                        },
+                        .pResolveAttachments = NULL,
+                        .pDepthStencilAttachment = NULL,
+                        .preserveAttachmentCount = 0,
+                        .pPreserveAttachments = NULL,
+                    },
+                },
+                .dependencyCount = 1,
+                .pDependencies = (VkSubpassDependency[]) {
+                    {
+                        // TODO: To ensure a well-defined transition from
+                        // non-external layout to external layout, is an
+                        // explicit VkSubpassDependency really required? I'm
+                        // (chadv) unsure because Vulkan is hard.
+                        //
+                        // TODO: Maybe allow a looser dstStageMask?
+                        .srcSubpass = 0, // self
+                        .srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                        .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+
+                        .dstSubpass = VK_SUBPASS_EXTERNAL,
+                        .dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                        .dstAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
+
+                        // VK_DEPENDENCY_BY_REGION_BIT is illegal for external images.
+                        .dependencyFlags = 0,
+                    },
+                },
+            },
+            /*pAllocator*/ NULL,
+            &pass);
+    check_vk_result(res);
+
+    res = vkCreateFramebuffer(dev,
+            &(VkFramebufferCreateInfo) {
+                .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                .pNext = NULL,
+                .flags = 0,
+                .renderPass = pass,
+                .attachmentCount = 1,
+                .pAttachments = (VkImageView[]) {
+                    external_image_view,
+                },
+                .width = view_width,
+                .height = view_height,
+                .layers = 1,
+            },
+            /*pAllocator*/ NULL,
+            &framebuffer);
+    check_vk_result(res);
+
+    res = vkBeginCommandBuffer(cmd,
+            &(VkCommandBufferBeginInfo) {
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                .pNext = NULL,
+                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+                .pInheritanceInfo = NULL,
+            });
+    check_vk_result(res);
+
+    vkCmdBeginRenderPass(cmd,
+            &(VkRenderPassBeginInfo) {
+                .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+                .pNext = NULL,
+                .renderPass = pass,
+                .framebuffer = framebuffer,
+                .renderArea = (VkRect2D) {
+                    .offset = { 0, 0 },
+                    .extent = { view_width, view_height },
+                },
+                .clearValueCount = 0,
+                .pClearValues = NULL,
+            },
+            VK_SUBPASS_CONTENTS_INLINE);
+
+    draw_stuff(cmd);
+
+    vkCmdEndRenderPass(cmd);
+
+    res = vkEndCommandBuffer(cmd);
+    check_vk_result(res);
+
+    res = vkQueueSubmit(queue,
+            /*submitCount*/ 1,
+            (VkSubmitInfo[]) {
+                {
+                    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                    .pNext = NULL,
+                    .waitSemaphoreCount = 0,
+                    .pWaitSemaphores = NULL,
+                    .pWaitDstStageMask = NULL,
+                    .commandBufferCount = 1,
+                    .pCommandBuffers = (VkCommandBuffer[]) {
+                        cmd,
+                    },
+                    .signalSemaphoreCount = 1,
+                    .pSignalSemaphores = (VkSemaphore[]) {
+                        release_semaphore,
+                    },
+                },
+            },
+            /*fence*/ VK_NULL_HANDLE);
+    check_vk_result(res);
+}
