@@ -49,7 +49,6 @@ New Object Types
 New Enum Constants
 
     Extends VkStructureType
-        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM
 
@@ -68,18 +67,9 @@ New Enums
 
 New Structs
 
-    typedef struct VkDrmExternalImageAbiCHROMIUM {
-        VkStructureType                             sType;
-        const void*                                 pNext;
-        uint32_t                                    vendor;
-        uint32_t                                    version;
-
-    } VkDrmExternalImageAbiCHROMIUM;
-
     typedef struct VkDrmExternalImageLayoutCHROMIUM {
         VkStructureType                             sType;
         const void*                                 pNext;
-        const VkDrmExternalImageAbiCHROMIUM*        abi;
         uint32_t                                    drmFourCC;
         uint64_t                                    drmModifier;
     } VkDrmExternalImageLayoutCHROMIUM;

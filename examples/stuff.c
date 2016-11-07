@@ -93,21 +93,15 @@ example_bind_dma_buf_image(
         .externalLayout = &(VkDrmExternalImageLayoutCHROMIUM) {
             // Observe that this struct omits stride. Stride is omitted
             // because it's meaningless for many layouts, such as layouts
-            // that contain auxiliary surfaces. The ABI version defines the
-            // stride.
+            // that contain auxiliary surfaces. Instead, the memory layout of
+            // an external image (including its stride, when applicable) is
+            // defined by an externally documented vendor-specific ABI. The
+            // expectation is that the vendor-specific ABI document will
+            // define a unique memory layout for each valid combination of
+            // (VkImageCreateInfo, VkDrmExternalImageCreateInfoCHROMIUM,
+            // VkPhysicalDeviceSparseProperties::{vendorID,deviceID}).
             .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM,
             .pNext = NULL,
-            .abi = &(VkDrmExternalImageAbiCHROMIUM) {
-                .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM,
-                .pNext = NULL,
-
-                // Vendors are defined in drm_fourcc.h.
-                .vendor = DRM_FORMAT_MOD_VENDOR_INTEL,
-
-                // The ABI is defined separately by each vendor and is a
-                // driver-private detail.
-                .version = 1,
-            },
             .drmFourCC = DRM_FORMAT_RGBA8888,
             .drmModifier = I915_FORMAT_MOD_Yf_TILED,
         },

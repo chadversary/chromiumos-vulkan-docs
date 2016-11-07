@@ -59,25 +59,15 @@ VKAPI_ATTR VkResult VKAPI_CALL vkImportDmaBufMemoryCHROMIUM(
 #define VK_CHROMIUM_DRM_EXTERNAL_IMAGE_SPEC_VERSION 0
 #define VK_CHROMIUM_DRM_EXTERNAL_IMAGE_EXTENSION_NAME "VK_CHROMIUM_drm_external_image"
 
-#define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_ABI_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM ((VkImageTiling) 0) // TODO
 #define VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM ((VkImageLayout) 0) // TODO
 #define VK_ACCESS_DRM_EXTERNAL_CHROMIUM ((VkAccessFlagBits) 0) // TODO
 
-typedef struct VkDrmExternalImageAbiCHROMIUM {
-    VkStructureType                             sType;
-    const void*                                 pNext;
-    uint32_t                                    vendor;
-    uint32_t                                    version;
-
-} VkDrmExternalImageAbiCHROMIUM;
-
 typedef struct VkDrmExternalImageLayoutCHROMIUM {
     VkStructureType                             sType;
     const void*                                 pNext;
-    const VkDrmExternalImageAbiCHROMIUM*        abi;
     uint32_t                                    drmFourCC;
     uint64_t                                    drmModifier;
 } VkDrmExternalImageLayoutCHROMIUM;
