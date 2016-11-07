@@ -30,7 +30,7 @@
 #include <stdlib.h>
 
 #include <drm/drm_fourcc.h>
-#include <vulkan/vulkan_chromium.h>
+#include <vulkan/vk_chromium.h>
 
 #define unused __attribute__((unused))
 
