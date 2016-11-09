@@ -34,6 +34,31 @@
 extern "C" {
 #endif
 
+#define VK_CHROMIUM_image_format_properties2
+#define VK_CHROMIUM_IMAGE_FORMAT_PROPERTIES2_SPEC_VERSION 0 // TODO
+#define VK_CHROMIUM_IMAGE_FORMAT_PROPERTIES2_EXTENSION_NAME "VK_CHROMIUM_image_format_properties2"
+
+#define VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES2_CHROMIUM ((VkStructureType) 0) // TODO
+
+typedef struct VkImageFormatProperties2CHROMIUM {
+    VkStructureType             sType;
+    const void*                 pNext;
+    VkImageFormatProperties     imageFormatProperties;
+} VkImageFormatProperties2CHROMIUM;
+
+typedef VkResult (VKAPI_CALL *PFN_vkGetPhysicalDeviceImageFormatProperties2CHROMIUM)(VkPhysicalDevice physicalDevice, VkFormat format, VkImageType type, VkImageTiling tiling, VkImageUsageFlags usage, VkImageCreateFlags flags, VkImageFormatProperties2CHROMIUM* pImageFormatProperties);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
+    VkPhysicalDevice                    physicalDevice,
+    VkFormat                            format,
+    VkImageType                         type,
+    VkImageTiling                       tiling,
+    VkImageUsageFlags                   usage,
+    VkImageCreateFlags                  flags,
+    VkImageFormatProperties2CHROMIUM*   pImageFormatProperties);
+#endif
+
 #define VK_CHROMIUM_dma_buf_memory_import
 #define VK_CHROMIUM_DMA_BUF_MEMORY_IMPORT_SPEC_VERSION 0 // TODO
 #define VK_CHROMIUM_DMA_BUF_MEMORY_IMPORT_EXTENSION_NAME "VK_CHROMIUM_dma_buf_memory_import"

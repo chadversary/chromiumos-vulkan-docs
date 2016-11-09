@@ -1,0 +1,91 @@
+Name Strings
+
+    VK_CHROMIUM_image_format_properties2
+
+Extension Type
+
+    Instance extension
+
+Registered Extension Number
+
+    Draft
+
+Status
+
+    Draft
+
+Version
+
+    0 (Early Draft)
+
+Last Modified Date
+
+    See git log.
+
+IP Status
+
+    TODO
+
+Dependencies
+
+    This extension is written against the Vulkan 1.0.32 specification [1].
+
+Contributors
+
+    Chad Versace, Google <chadversary@chromium.org>
+
+Contact
+
+    Chad Versace <chadversary@chromium.org>
+
+Overview
+
+    TODO
+
+New Object Types
+
+    None
+
+New Enum Constants
+
+    Extends VkStructureType
+        VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES2_CHROMIUM
+
+New Enums
+
+    None
+
+New Structs
+
+    typedef struct VkImageFormatProperties2CHROMIUM {
+        VkStructureType             sType;
+        void*                       pNext;
+        VkImageFormatProperties     imageFormatProperties;
+    } VkImageFormatProperties2CHROMIUM;
+
+New Functions
+
+    VkResult vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
+        VkPhysicalDevice                    physicalDevice,
+        VkFormat                            format,
+        VkImageType                         type,
+        VkImageTiling                       tiling,
+        VkImageUsageFlags                   usage,
+        VkImageCreateFlags                  flags,
+        VkImageFormatProperties2CHROMIUM*   pImageFormatProperties);
+
+Description
+
+    TODO
+
+Issues
+
+    None
+
+References
+
+    [1]: https://github.com/KhronosGroup/Vulkan-Docs/tree/v1.0-core-20161025
+
+Version History
+
+    See git log.
