@@ -38,21 +38,32 @@ extern "C" {
 #define VK_CHROMIUM_DMA_BUF_MEMORY_IMPORT_SPEC_VERSION 0 // TODO
 #define VK_CHROMIUM_DMA_BUF_MEMORY_IMPORT_EXTENSION_NAME "VK_CHROMIUM_dma_buf_memory_import"
 
+#define VK_STRUCTURE_TYPE_DMA_BUF_PROPERTIES_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_STRUCTURE_TYPE_DMA_BUF_MEMORY_IMPORT_INFO_CHROMIUM ((VkStructureType) 0) // TODO
 
+typedef struct VkDmaBufPropertiesCHROMIUM {
+    VkStructureType     sType;
+    const void*         pNext;
+    VkDeviceSize        size;
+    uint32_t            memoryTypeIndexCount;
+    uint32_t            memoryTypeIndices[VK_MAX_MEMORY_TYPES];
+} VkDmaBufPropertiesCHROMIUM;
+
+// Extends VkMemoryAllocateInfo
 typedef struct VkDmaBufMemoryImportInfoCHROMIUM {
-    VkStructureType                             sType;
-    const void*                                 pNext;
-    int                                         fd;
-    VkDeviceSize                                size;
+    VkStructureType     sType;
+    const void*         pNext;
+    int                 dmaBufFd;
+    VkDeviceSize        allocationOffset;
 } VkDmaBufMemoryImportInfoCHROMIUM;
 
+typedef VkResult VKAPI_PTR (*PFN_vkGetDmaBufPropertiesCHROMIUM)(VkDevice device, int dmaBufFd, VkDmaBufPropertiesCHROMIUM* pProperties);
+
 #ifndef VK_NO_PROTOTYPES
-VKAPI_ATTR VkResult VKAPI_CALL vkImportDmaBufMemoryCHROMIUM(
-    VkDevice                                    device,
-    const VkDmaBufMemoryImportInfoCHROMIUM*     pImportInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkDeviceMemory*                             pMemory);
+VKAPI_ATTR VkResult VKAPI_CALL vkGetDeviceDmaBufPropertiesCHROMIUM(
+    VkDevice                        device,
+    int                             dmaBufFd,
+    VkDmaBufPropertiesCHROMIUM*     pProperties);
 #endif
 
 #define VK_CHROMIUM_drm_external_image 0

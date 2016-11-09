@@ -26,7 +26,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <drm/drm_fourcc.h>
@@ -54,22 +56,65 @@ draw_stuff(VkCommandBuffer cmd)
     // STUB
 }
 
-static void unused
-example_import_dma_buf_memory(VkDevice dev, int fd, size_t size,
-                              VkDeviceMemory *mem)
+static VkResult unused
+example_import_dma_buf_memory(
+        VkDevice dev,
+        int dma_buf,
+        VkDeviceMemory *memory,
+        uint32_t *memory_type_index,
+        VkDeviceSize *memory_size)
 {
     VkResult res;
 
-    res = vkImportDmaBufMemoryCHROMIUM(dev,
+    // Query the dma_buf's size and the set of VkMemoryType it supports.
+    VkDmaBufPropertiesCHROMIUM props = {
+        .sType = VK_STRUCTURE_TYPE_DMA_BUF_PROPERTIES_CHROMIUM,
+        .pNext = NULL,
+        // Remainder will be filled by vkDeviceGetDmaBufMemoryTypeProperties.
+    };
+
+    res = vkGetDeviceDmaBufPropertiesCHROMIUM(dev, dma_buf, &props);
+    if (res != VK_SUCCESS)
+        return res;
+
+    assert(props.memoryTypeIndexCount > 0);
+
+    // Print info about dma_buf.
+    printf("dma_buf size: %lu\n", props.size);
+    for (uint32_t i = 0; i < props.memoryTypeIndexCount; ++i) {
+        printf("dma_buf supports memory type index %u\n",
+               props.memoryTypeIndices[i]);
+    }
+
+    // When importing a dma_buf as VkDeviceMemory, it must be imported
+    // with a VkMemoryType returned by vkDeviceGetDmaBufPropertiesCHROMIUM.
+    // The resultant VkDeviceMemory will span the dma_buf's address range
+    // given by VkDmaBufMemoryImportInfoCHROMIUM::allocationOffset and
+    // VkMemoryAllocateInfo::allocationSize. `offset + size` must not exceed
+    // VkDmaBufPropertiesCHROMIUM::size.
+    VkMemoryAllocateInfo info = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .memoryTypeIndex = props.memoryTypeIndices[0],
+        .allocationSize = props.size,
+        .pNext =
             &(VkDmaBufMemoryImportInfoCHROMIUM) {
                 .sType = VK_STRUCTURE_TYPE_DMA_BUF_MEMORY_IMPORT_INFO_CHROMIUM,
                 .pNext = NULL,
-                .fd = fd,
-                .size = size,
+                .dmaBufFd = dma_buf,
+                .allocationOffset = 0,
             },
+    };
+
+    res = vkAllocateMemory(dev,
+            &info,
             /*pAllocator*/ NULL,
-            mem);
-    check_vk_result(res);
+            memory);
+    if (res != VK_SUCCESS)
+        return res;
+
+    *memory_type_index = info.memoryTypeIndex;
+    *memory_size = info.allocationSize;
+    return VK_SUCCESS;
 }
 
 static void unused
