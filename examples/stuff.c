@@ -37,53 +37,54 @@
 #define unused __attribute__((unused))
 
 static void
-check_vk_result(VkResult res)
+checkVkResult(VkResult result)
 {
-    if (res != VK_SUCCESS)
+    if (result != VK_SUCCESS)
         abort();
 }
 
 static VkFormat
-get_vk_format_for_drm_fourcc(uint32_t drm_fourcc)
+getVkFormatForDrmFourCC(uint32_t drmFourCC)
 {
     // STUB
     return VK_FORMAT_UNDEFINED;
 }
 
 static void
-draw_stuff(VkCommandBuffer cmd)
+drawStuff(VkCommandBuffer commandBuffer)
 {
     // STUB
 }
 
 static VkResult unused
-example_import_dma_buf_memory(
-        VkDevice dev,
-        int dma_buf,
-        VkDeviceMemory *memory,
-        uint32_t *memory_type_index,
-        VkDeviceSize *memory_size)
+exampleImportDmaBufMemory(
+        VkDevice device,
+        int dmaBufFd,
+        VkDeviceMemory *pMemory,
+        uint32_t *pMemoryTypeIndex,
+        VkDeviceSize *pMemorySize)
 {
-    VkResult res;
+    VkResult result;
 
     // Query the dma_buf's size and the set of VkMemoryType it supports.
-    VkDmaBufPropertiesCHROMIUM props = {
+    VkDmaBufPropertiesCHROMIUM dmaBufProperties = {
         .sType = VK_STRUCTURE_TYPE_DMA_BUF_PROPERTIES_CHROMIUM,
         .pNext = NULL,
         // Remainder will be filled by vkDeviceGetDmaBufMemoryTypeProperties.
     };
 
-    res = vkGetDeviceDmaBufPropertiesCHROMIUM(dev, dma_buf, &props);
-    if (res != VK_SUCCESS)
-        return res;
+    result = vkGetDeviceDmaBufPropertiesCHROMIUM(device, dmaBufFd,
+                                                 &dmaBufProperties);
+    if (result != VK_SUCCESS)
+        return result;
 
-    assert(props.memoryTypeIndexCount > 0);
+    assert(dmaBufProperties.memoryTypeIndexCount > 0);
 
     // Print info about dma_buf.
-    printf("dma_buf size: %lu\n", props.size);
-    for (uint32_t i = 0; i < props.memoryTypeIndexCount; ++i) {
+    printf("dma_buf size: %lu\n", dmaBufProperties.size);
+    for (uint32_t i = 0; i < dmaBufProperties.memoryTypeIndexCount; ++i) {
         printf("dma_buf supports memory type index %u\n",
-               props.memoryTypeIndices[i]);
+               dmaBufProperties.memoryTypeIndices[i]);
     }
 
     // When importing a dma_buf as VkDeviceMemory, it must be imported
@@ -92,47 +93,47 @@ example_import_dma_buf_memory(
     // given by VkDmaBufMemoryImportInfoCHROMIUM::allocationOffset and
     // VkMemoryAllocateInfo::allocationSize. `offset + size` must not exceed
     // VkDmaBufPropertiesCHROMIUM::size.
-    VkMemoryAllocateInfo info = {
+    VkMemoryAllocateInfo allocateInfo = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .memoryTypeIndex = props.memoryTypeIndices[0],
-        .allocationSize = props.size,
+        .memoryTypeIndex = dmaBufProperties.memoryTypeIndices[0],
+        .allocationSize = dmaBufProperties.size,
         .pNext =
             &(VkDmaBufMemoryImportInfoCHROMIUM) {
                 .sType = VK_STRUCTURE_TYPE_DMA_BUF_MEMORY_IMPORT_INFO_CHROMIUM,
                 .pNext = NULL,
-                .dmaBufFd = dma_buf,
+                .dmaBufFd = dmaBufFd,
                 .allocationOffset = 0,
             },
     };
 
-    res = vkAllocateMemory(dev,
-            &info,
+    result = vkAllocateMemory(device,
+            &allocateInfo,
             /*pAllocator*/ NULL,
-            memory);
-    if (res != VK_SUCCESS)
-        return res;
+            pMemory);
+    if (result != VK_SUCCESS)
+        return result;
 
-    *memory_type_index = info.memoryTypeIndex;
-    *memory_size = info.allocationSize;
+    *pMemoryTypeIndex = allocateInfo.memoryTypeIndex;
+    *pMemorySize = allocateInfo.allocationSize;
     return VK_SUCCESS;
 }
 
 static void unused
-example_bind_dma_buf_image(
-        VkDevice dev,
-        VkDeviceMemory dma_buf_memory,
-        size_t offset,
+exampleBindDmaBufImage(
+        VkDevice device,
+        VkDeviceMemory dmaBufMemory,
+        VkDeviceSize offset,
         uint32_t width,
         uint32_t height,
-        VkImage *external_image)
+        VkImage *pExternalImage)
 {
-    VkResult res;
+    VkResult result;
 
     // This example hard-codes the image's external layout.  In real usage, the
     // image's external layout, as well as its offset into the dma_buf, would
     // be negotiated between the consumer and producer during an initial setup
     // phase.
-    const VkDrmExternalImageCreateInfoCHROMIUM external_info = {
+    const VkDrmExternalImageCreateInfoCHROMIUM externalInfo = {
         .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM,
         .pNext = NULL,
         .externalLayout = &(VkDrmExternalImageLayoutCHROMIUM) {
@@ -152,8 +153,8 @@ example_bind_dma_buf_image(
         },
     };
 
-    VkFormat format = get_vk_format_for_drm_fourcc(
-            external_info.externalLayout->drmFourCC);
+    VkFormat format = getVkFormatForDrmFourCC(
+            externalInfo.externalLayout->drmFourCC);
 
     // Create an external VkImage. Observe that the image, like any
     // non-external VkImage, is initially unbound to memory; that
@@ -187,10 +188,10 @@ example_bind_dma_buf_image(
     // ownership" of the image when it transitions from a non-external layout
     // to an external layout.
     //
-    res = vkCreateImage(dev,
+    result = vkCreateImage(device,
             &(VkImageCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                .pNext = &external_info,
+                .pNext = &externalInfo,
                 .flags = 0,
                 .imageType = VK_IMAGE_TYPE_2D,
                 .format = format,
@@ -209,34 +210,34 @@ example_bind_dma_buf_image(
                 .initialLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
             },
             /*pAllocator*/ NULL,
-            external_image);
-    check_vk_result(res);
+            pExternalImage);
+    checkVkResult(result);
 
     // To bind a VkImage to a dma_buf-imported VkDeviceMemory, the image must
     // have been created with
     //     VkImageCreateInfo::initialLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM.
-    res = vkBindImageMemory(dev, *external_image, dma_buf_memory, offset);
-    check_vk_result(res);
+    result = vkBindImageMemory(device, *pExternalImage, dmaBufMemory, offset);
+    checkVkResult(result);
 }
 
 static void unused
-example_acquire_external_image_with_pipeline_barrier(
-        VkDevice dev,
+exampleAcqureExternalImageWithPipelineBarrier(
+        VkDevice device,
         VkQueue queue,
-        uint32_t queue_family_index,
-        VkCommandBuffer cmd,
-        VkImage external_image,
-        VkSemaphore acquire_semaphore) {
-    VkResult res;
+        uint32_t queueFamilyIndex,
+        VkCommandBuffer commandBuffer,
+        VkImage externalImage,
+        VkSemaphore acquireSemaphore) {
+    VkResult result;
 
-    res = vkBeginCommandBuffer(cmd,
+    result = vkBeginCommandBuffer(commandBuffer,
             &(VkCommandBufferBeginInfo) {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .pNext = NULL,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
                 .pInheritanceInfo = NULL,
             });
-    check_vk_result(res);
+    checkVkResult(result);
 
     // This barrier acquires ownership of the image through a layout
     // transition.  The source layout is the external layout defined by
@@ -253,8 +254,8 @@ example_acquire_external_image_with_pipeline_barrier(
         .oldLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
         .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .dstQueueFamilyIndex = queue_family_index,
-        .image = external_image,
+        .dstQueueFamilyIndex = queueFamilyIndex,
+        .image = externalImage,
         .subresourceRange = {
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             .baseMipLevel = 0,
@@ -264,7 +265,7 @@ example_acquire_external_image_with_pipeline_barrier(
         },
     };
 
-    vkCmdPipelineBarrier(cmd,
+    vkCmdPipelineBarrier(commandBuffer,
         // TODO: Maybe allow a looser srcStageMask?
         /*srcStageMask*/ VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
         /*dstStageMask*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -276,12 +277,12 @@ example_acquire_external_image_with_pipeline_barrier(
         /*imageMemoryBarrierCount*/ 1,
         /*pImageMemoryBarriers*/ &barrier);
 
-    draw_stuff(cmd);
+    drawStuff(commandBuffer);
 
-    res = vkEndCommandBuffer(cmd);
-    check_vk_result(res);
+    result = vkEndCommandBuffer(commandBuffer);
+    checkVkResult(result);
 
-    res = vkQueueSubmit(queue,
+    result = vkQueueSubmit(queue,
             /*submitCount*/ 1,
             (VkSubmitInfo[]) {
                 {
@@ -289,44 +290,44 @@ example_acquire_external_image_with_pipeline_barrier(
                     .pNext = NULL,
                     .waitSemaphoreCount = 1,
                     .pWaitSemaphores = (VkSemaphore[]) {
-                        acquire_semaphore,
+                        acquireSemaphore,
                     },
                     .pWaitDstStageMask = (VkPipelineStageFlags[]) {
                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     },
                     .commandBufferCount = 1,
                     .pCommandBuffers = (VkCommandBuffer[]) {
-                        cmd,
+                        commandBuffer,
                     },
                     .signalSemaphoreCount = 0,
                     .pSignalSemaphores = NULL,
                 },
             },
             /*fence*/ VK_NULL_HANDLE);
-    check_vk_result(res);
+    checkVkResult(result);
 }
 
 static void unused
-example_release_external_image_with_pipeline_barrier(
-        VkDevice dev,
+exampleReleaseExternalImageWithPipelineBarrier(
+        VkDevice device,
         VkQueue queue,
-        uint32_t queue_family_index,
-        VkCommandBuffer cmd,
-        VkImage external_image,
-        VkSemaphore release_semaphore)
+        uint32_t queueFamilyIndex,
+        VkCommandBuffer commandBuffer,
+        VkImage externalImage,
+        VkSemaphore releaseSemaphore)
 {
-    VkResult res;
+    VkResult result;
 
-    res = vkBeginCommandBuffer(cmd,
+    result = vkBeginCommandBuffer(commandBuffer,
             &(VkCommandBufferBeginInfo) {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .pNext = NULL,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
                 .pInheritanceInfo = NULL,
             });
-    check_vk_result(res);
+    checkVkResult(result);
 
-    draw_stuff(cmd);
+    drawStuff(commandBuffer);
 
     // This barrier releases ownership of the image through a layout
     // transition.  The source layout is a normal Vulkan layout; the
@@ -341,9 +342,9 @@ example_release_external_image_with_pipeline_barrier(
         .dstAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
         .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .newLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
-        .srcQueueFamilyIndex = queue_family_index,
+        .srcQueueFamilyIndex = queueFamilyIndex,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .image = external_image,
+        .image = externalImage,
         .subresourceRange = {
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             .baseMipLevel = 0,
@@ -353,7 +354,7 @@ example_release_external_image_with_pipeline_barrier(
         },
     };
 
-    vkCmdPipelineBarrier(cmd,
+    vkCmdPipelineBarrier(commandBuffer,
         // TODO: Maybe allow a looser dstStageMask?
         /*srcStageMask*/ VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         /*dstStageMask*/ VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -365,10 +366,10 @@ example_release_external_image_with_pipeline_barrier(
         /*imageMemoryBarrierCount*/ 1,
         /*pImageMemoryBarriers*/ &barrier);
 
-    res = vkEndCommandBuffer(cmd);
-    check_vk_result(res);
+    result = vkEndCommandBuffer(commandBuffer);
+    checkVkResult(result);
 
-    res = vkQueueSubmit(queue,
+    result = vkQueueSubmit(queue,
             /*submitCount*/ 1,
             (VkSubmitInfo[]) {
                 {
@@ -381,35 +382,35 @@ example_release_external_image_with_pipeline_barrier(
                     },
                     .commandBufferCount = 1,
                     .pCommandBuffers = (VkCommandBuffer[]) {
-                        cmd,
+                        commandBuffer,
                     },
                     .signalSemaphoreCount = 0,
                     .pSignalSemaphores = NULL,
                     .pWaitSemaphores = (VkSemaphore[]) {
-                        release_semaphore,
+                        releaseSemaphore,
                     },
                 },
             },
             /*fence*/ VK_NULL_HANDLE);
-    check_vk_result(res);
+    checkVkResult(result);
 }
 
 static void unused
-example_acquire_external_image_with_subpass_transition(
-        VkDevice dev,
+exampleAcquireExternalImageWithSubpassTransition(
+        VkDevice device,
         VkQueue queue,
-        uint32_t queue_family_index,
-        VkCommandBuffer cmd,
-        VkImageView external_image_view,
-        uint32_t view_width,
-        uint32_t view_height,
-        VkSemaphore acquire_semaphore)
+        uint32_t queueFamilyIndex,
+        VkCommandBuffer commandBuffer,
+        VkImageView externalImageView,
+        uint32_t viewWidth,
+        uint32_t viewHeight,
+        VkSemaphore acquireSemaphore)
 {
-    VkResult res;
+    VkResult result;
     VkRenderPass pass;
     VkFramebuffer framebuffer;
 
-    res = vkCreateRenderPass(dev,
+    result = vkCreateRenderPass(device,
             &(VkRenderPassCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
                 .pNext = NULL,
@@ -479,9 +480,9 @@ example_acquire_external_image_with_subpass_transition(
             },
             /*pAllocator*/ NULL,
             &pass);
-    check_vk_result(res);
+    checkVkResult(result);
 
-    res = vkCreateFramebuffer(dev,
+    result = vkCreateFramebuffer(device,
             &(VkFramebufferCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .pNext = NULL,
@@ -489,26 +490,26 @@ example_acquire_external_image_with_subpass_transition(
                 .renderPass = pass,
                 .attachmentCount = 1,
                 .pAttachments = (VkImageView[]) {
-                    external_image_view,
+                    externalImageView,
                 },
-                .width = view_width,
-                .height = view_height,
+                .width = viewWidth,
+                .height = viewHeight,
                 .layers = 1,
             },
             /*pAllocator*/ NULL,
             &framebuffer);
-    check_vk_result(res);
+    checkVkResult(result);
 
-    res = vkBeginCommandBuffer(cmd,
+    result = vkBeginCommandBuffer(commandBuffer,
             &(VkCommandBufferBeginInfo) {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .pNext = NULL,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
                 .pInheritanceInfo = NULL,
             });
-    check_vk_result(res);
+    checkVkResult(result);
 
-    vkCmdBeginRenderPass(cmd,
+    vkCmdBeginRenderPass(commandBuffer,
             &(VkRenderPassBeginInfo) {
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
                 .pNext = NULL,
@@ -516,21 +517,21 @@ example_acquire_external_image_with_subpass_transition(
                 .framebuffer = framebuffer,
                 .renderArea = (VkRect2D) {
                     .offset = { 0, 0 },
-                    .extent = { view_width, view_height },
+                    .extent = { viewWidth, viewHeight },
                 },
                 .clearValueCount = 0,
                 .pClearValues = NULL,
             },
             VK_SUBPASS_CONTENTS_INLINE);
 
-    draw_stuff(cmd);
+    drawStuff(commandBuffer);
 
-    vkCmdEndRenderPass(cmd);
+    vkCmdEndRenderPass(commandBuffer);
 
-    res = vkEndCommandBuffer(cmd);
-    check_vk_result(res);
+    result = vkEndCommandBuffer(commandBuffer);
+    checkVkResult(result);
 
-    res = vkQueueSubmit(queue,
+    result = vkQueueSubmit(queue,
             /*submitCount*/ 1,
             (VkSubmitInfo[]) {
                 {
@@ -538,39 +539,39 @@ example_acquire_external_image_with_subpass_transition(
                     .pNext = NULL,
                     .waitSemaphoreCount = 1,
                     .pWaitSemaphores = (VkSemaphore[]) {
-                        acquire_semaphore,
+                        acquireSemaphore,
                     },
                     .pWaitDstStageMask = (VkPipelineStageFlags[]) {
                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     },
                     .commandBufferCount = 1,
                     .pCommandBuffers = (VkCommandBuffer[]) {
-                        cmd,
+                        commandBuffer,
                     },
                     .signalSemaphoreCount = 0,
                     .pSignalSemaphores = NULL,
                 },
             },
             /*fence*/ VK_NULL_HANDLE);
-    check_vk_result(res);
+    checkVkResult(result);
 }
 
 static void unused
-example_release_external_image_with_subpass_transition(
-        VkDevice dev,
+exampleReleaseExternalImageWithSubpassTransition(
+        VkDevice device,
         VkQueue queue,
-        uint32_t queue_family_index,
-        VkCommandBuffer cmd,
-        VkImageView external_image_view,
-        uint32_t view_width,
-        uint32_t view_height,
-        VkSemaphore release_semaphore)
+        uint32_t queueFamilyIndex,
+        VkCommandBuffer commandBuffer,
+        VkImageView externalImageView,
+        uint32_t viewWidth,
+        uint32_t viewHeight,
+        VkSemaphore releaseSemaphore)
 {
-    VkResult res;
+    VkResult result;
     VkRenderPass pass;
     VkFramebuffer framebuffer;
 
-    res = vkCreateRenderPass(dev,
+    result = vkCreateRenderPass(device,
             &(VkRenderPassCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
                 .pNext = NULL,
@@ -634,9 +635,9 @@ example_release_external_image_with_subpass_transition(
             },
             /*pAllocator*/ NULL,
             &pass);
-    check_vk_result(res);
+    checkVkResult(result);
 
-    res = vkCreateFramebuffer(dev,
+    result = vkCreateFramebuffer(device,
             &(VkFramebufferCreateInfo) {
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .pNext = NULL,
@@ -644,26 +645,26 @@ example_release_external_image_with_subpass_transition(
                 .renderPass = pass,
                 .attachmentCount = 1,
                 .pAttachments = (VkImageView[]) {
-                    external_image_view,
+                    externalImageView,
                 },
-                .width = view_width,
-                .height = view_height,
+                .width = viewWidth,
+                .height = viewHeight,
                 .layers = 1,
             },
             /*pAllocator*/ NULL,
             &framebuffer);
-    check_vk_result(res);
+    checkVkResult(result);
 
-    res = vkBeginCommandBuffer(cmd,
+    result = vkBeginCommandBuffer(commandBuffer,
             &(VkCommandBufferBeginInfo) {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .pNext = NULL,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
                 .pInheritanceInfo = NULL,
             });
-    check_vk_result(res);
+    checkVkResult(result);
 
-    vkCmdBeginRenderPass(cmd,
+    vkCmdBeginRenderPass(commandBuffer,
             &(VkRenderPassBeginInfo) {
                 .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
                 .pNext = NULL,
@@ -671,21 +672,21 @@ example_release_external_image_with_subpass_transition(
                 .framebuffer = framebuffer,
                 .renderArea = (VkRect2D) {
                     .offset = { 0, 0 },
-                    .extent = { view_width, view_height },
+                    .extent = { viewWidth, viewHeight },
                 },
                 .clearValueCount = 0,
                 .pClearValues = NULL,
             },
             VK_SUBPASS_CONTENTS_INLINE);
 
-    draw_stuff(cmd);
+    drawStuff(commandBuffer);
 
-    vkCmdEndRenderPass(cmd);
+    vkCmdEndRenderPass(commandBuffer);
 
-    res = vkEndCommandBuffer(cmd);
-    check_vk_result(res);
+    result = vkEndCommandBuffer(commandBuffer);
+    checkVkResult(result);
 
-    res = vkQueueSubmit(queue,
+    result = vkQueueSubmit(queue,
             /*submitCount*/ 1,
             (VkSubmitInfo[]) {
                 {
@@ -696,14 +697,14 @@ example_release_external_image_with_subpass_transition(
                     .pWaitDstStageMask = NULL,
                     .commandBufferCount = 1,
                     .pCommandBuffers = (VkCommandBuffer[]) {
-                        cmd,
+                        commandBuffer,
                     },
                     .signalSemaphoreCount = 1,
                     .pSignalSemaphores = (VkSemaphore[]) {
-                        release_semaphore,
+                        releaseSemaphore,
                     },
                 },
             },
             /*fence*/ VK_NULL_HANDLE);
-    check_vk_result(res);
+    checkVkResult(result);
 }
