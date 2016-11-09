@@ -32,7 +32,7 @@ Dependencies
 
 Contributors
 
-    Chad Versace, Google
+    Chad Versace, Google <chadversary@chromium.org>
 
 Contact
 
