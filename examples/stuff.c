@@ -43,13 +43,6 @@ checkVkResult(VkResult result)
         abort();
 }
 
-static VkFormat
-getVkFormatForDrmFourCC(uint32_t drmFourCC)
-{
-    // STUB
-    return VK_FORMAT_UNDEFINED;
-}
-
 static void
 drawStuff(VkCommandBuffer commandBuffer)
 {
@@ -122,17 +115,13 @@ static void unused
 exampleBindDmaBufImage(
         VkDevice device,
         VkDeviceMemory dmaBufMemory,
-        VkDeviceSize offset,
-        uint32_t width,
-        uint32_t height,
         VkImage *pExternalImage)
 {
     VkResult result;
 
     // This example hard-codes the image's external layout.  In real usage, the
-    // image's external layout, as well as its offset into the dma_buf, would
-    // be negotiated between the consumer and producer during an initial setup
-    // phase.
+    // image's external layout would be negotiated between the consumer and
+    // producer during an initial setup phase.
     const VkDrmExternalImageCreateInfoCHROMIUM externalInfo = {
         .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM,
         .pNext = NULL,
@@ -153,22 +142,27 @@ exampleBindDmaBufImage(
         },
     };
 
-    VkFormat format = getVkFormatForDrmFourCC(
-            externalInfo.externalLayout->drmFourCC);
-
-    // Create an external VkImage. Observe that the image, like any
-    // non-external VkImage, is initially unbound to memory; that
-    // VkDrmExternalImageCreateInfoCHROMIUM extends VkImageCreateInfo; and that
-    // 'initialLayout' and 'tiling' refer to VkDrmExternalImageCreateInfoCHROMIUM.
+    // This example hard-codes much of VkImageCreateInfo. In real usage, this
+    // hard-coded info would be negotiated between the image's consumer and
+    // producer.  Observe that this example creates a "simple" image (that is,
+    // a 2D, non-mipmapped, non-array, single-sample image); but nothing in the
+    // extension API enforces that the image be "simple". The complexity of the
+    // external image is determined by the negotiation between the consumer and
+    // producer, as well as constraints defined in any the vendor-specific
+    // extension documents.
     //
     // TODO: Move the below text to the extension specs.
     //
     // An "external image" is any VkImage created with
-    // VkImageCreateInfo::initalLayout ==
-    // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM.  The image's external layout is
-    // defined by VkDrmExternalImageCreateInfoCHROMIUM.
+    //     .
+    //     VkImageCreateInfo::pNext is VkDrmExternalImageCreateInfoCHROMIUM
+    //     VkImageCreateInfo::initalLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM
+    //     VkImageCreateInfo::tiling == VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
+    //     .
+    // The image's tiling and 'external layout' is defined by
+    // VkDrmExternalImageCreateInfoCHROMIUM.
     //
-    // An external image has two layouts at all times: an external layout,
+    // An external image has two layouts at all times: an 'external layout',
     // which was defined during image creation and is immutable; and a current
     // layout, which can be either the image's external layout, referenced by
     // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM, or a normal Vulkan layout, such
@@ -188,35 +182,47 @@ exampleBindDmaBufImage(
     // ownership" of the image when it transitions from a non-external layout
     // to an external layout.
     //
+    const VkImageCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = &externalInfo,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = VK_FORMAT_R8G8B8A8_UNORM,
+        .extent = { 1920, 1080, 1 },
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = 1,
+        .tiling = VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
+        .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                 VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                 VK_IMAGE_USAGE_SAMPLED_BIT |
+                 VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 1,
+        .pQueueFamilyIndices = (uint32_t[]) { 0 },
+        .initialLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+    };
+
+    // Create the external VkImage. Observe that the image, like any
+    // non-external VkImage, is initially unbound to memory.
     result = vkCreateImage(device,
-            &(VkImageCreateInfo) {
-                .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                .pNext = &externalInfo,
-                .flags = 0,
-                .imageType = VK_IMAGE_TYPE_2D,
-                .format = format,
-                .extent = { width, height, 1 },
-                .mipLevels = 1,
-                .arrayLayers = 1,
-                .samples = 1,
-                .tiling = VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
-                .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-                         VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-                         VK_IMAGE_USAGE_SAMPLED_BIT |
-                         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-                .queueFamilyIndexCount = 1,
-                .pQueueFamilyIndices = (uint32_t[]) { 0 },
-                .initialLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
-            },
+            &createInfo,
             /*pAllocator*/ NULL,
             pExternalImage);
     checkVkResult(result);
 
     // To bind a VkImage to a dma_buf-imported VkDeviceMemory, the image must
     // have been created with
-    //     VkImageCreateInfo::initialLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM.
-    result = vkBindImageMemory(device, *pExternalImage, dmaBufMemory, offset);
+    //     .
+    //     VkImageCreateInfo::pNext is VkDrmExternalImageCreateInfoCHROMIUM
+    //     VkImageCreateInfo::initalLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM
+    //     VkImageCreateInfo::tiling == VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
+    //
+    // This example hard-code the image's offset into the dma_buf. In real
+    // usage, the offset would be negotiated between consumer and producer.
+    //
+    result = vkBindImageMemory(device, *pExternalImage,
+                               dmaBufMemory, /*memoryOffset*/ 4096);
     checkVkResult(result);
 }
 
