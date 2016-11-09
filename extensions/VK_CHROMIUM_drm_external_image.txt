@@ -32,7 +32,9 @@ Dependencies
 
 Contributors
 
+    Antoine Labour, Google <piman@chromium.org>
     Chad Versace, Google <chadversary@chromium.org>
+    Kristian Høgsberg Kristensen <hoegsberg@chromium.org>
 
 Contact
 
