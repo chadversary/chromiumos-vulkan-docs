@@ -116,6 +116,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryDmaBufCHROMIUM(
 #define VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM ((VkImageLayout) 0) // TODO
 #define VK_ACCESS_EXTERNAL_DRM_CHROMIUM ((VkAccessFlagBits) 0) // TODO
 
+// Extends VkImageFormatProperties2CHROMIUM
 typedef struct VkExternalDrmImageFormatPropertiesCHROMIUM {
     VkStructureType     sType;
     void*               pNext;
