@@ -91,6 +91,21 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetDmaBufPropertiesCHROMIUM(
     VkDmaBufPropertiesCHROMIUM*     pProperties);
 #endif
 
+#define VK_CHROMIUM_dma_buf_memory_export
+#define VK_CHROMIUM_DMA_BUF_MEMORY_EXPORT_SPEC_VERSION 0 // TODO
+#define VK_CHROMIUM_DMA_BUF_MEMORY_EXPORT_EXTENSION_NAME "VK_CHROMIUM_dma_buf_memory_export"
+
+#define VK_MEMORY_PROPERTY_DMA_BUF_EXPORT_CHROMIUM ((VkMemoryPropertyFlagBits) 0) // TODO
+
+typedef VkResult VKAPI_PTR (*PFN_vkGetMemoryDmaBufCHROMIUM)(VkDevice device, VkDeviceMemory memory, int* pDmaBufFd);
+
+#ifndef VK_NO_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryDmaBufCHROMIUM(
+    VkDevice            device,
+    VkDeviceMemory      memory,
+    int*                pDmaBufFd);
+#endif
+
 #define VK_CHROMIUM_external_drm_image
 #define VK_CHROMIUM_EXTERNAL_DRM_IMAGE_SPEC_VERSION 0
 #define VK_CHROMIUM_EXTERNAL_DRM_IMAGE_EXTENSION_NAME "VK_CHROMIUM_external_drm_image"

@@ -165,6 +165,60 @@ exampleGetDrmFormatModifierCount(
 }
 
 static VkResult unused
+exampleAllocateAndExportDmaBuf(
+        VkPhysicalDevice physicalDevice,
+        VkDevice device,
+        VkMemoryPropertyFlags requiredFlags,
+        VkDeviceSize allocationSize,
+        VkDeviceMemory *pMemory,
+        int *pDmaBufFd)
+{
+    VkResult result;
+    VkPhysicalDeviceMemoryProperties memoryProperties;
+    uint32_t memoryTypeIndex = UINT32_MAX;
+
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+
+    // Choose a memory type that supports dma_buf-export as well the given required flags.
+    requiredFlags &= VK_MEMORY_PROPERTY_DMA_BUF_EXPORT_CHROMIUM;
+
+    for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
+        VkMemoryPropertyFlags actualFlags =
+            memoryProperties.memoryTypes[i].propertyFlags;
+
+        if ((actualFlags & requiredFlags) == requiredFlags) {
+            memoryTypeIndex = i;
+            break;
+        }
+    }
+
+    if (memoryTypeIndex == UINT32_MAX)
+        return VK_ERROR_FEATURE_NOT_PRESENT;
+
+    result = vkAllocateMemory(device,
+            &(VkMemoryAllocateInfo) {
+                .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                .pNext = NULL,
+                .allocationSize = allocationSize,
+                .memoryTypeIndex = memoryTypeIndex,
+            },
+            /*pAllocator*/ NULL,
+            pMemory);
+    if (result < 0)
+        return result;
+
+    result = vkGetMemoryDmaBufCHROMIUM(device, *pMemory, pDmaBufFd);
+    if (result < 0)
+        goto fail;
+
+    return VK_SUCCESS;
+
+  fail:
+    vkFreeMemory(device, *pMemory, /*pAllocator*/ NULL);
+    return result;
+}
+
+static VkResult unused
 examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
 {
     VkResult result;
