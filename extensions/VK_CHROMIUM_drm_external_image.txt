@@ -29,6 +29,7 @@ IP Status
 Dependencies
 
     This extension is written against the Vulkan 1.0.32 specification [1].
+    Requires VK_CHROMIUM_drm_external_image_format_properties.
 
 Contributors
 
@@ -52,7 +53,6 @@ New Enum Constants
 
     Extends VkStructureType
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM
-        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM
 
     Extends VkImageTiling
         VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
@@ -69,13 +69,6 @@ New Enums
 
 New Structs
 
-    typedef struct VkDrmExternalImageLayoutCHROMIUM {
-        VkStructureType                             sType;
-        const void*                                 pNext;
-        uint32_t                                    drmFourCC;
-        uint64_t                                    drmModifier;
-    } VkDrmExternalImageLayoutCHROMIUM;
-
     // Extends VkImageCreateInfo
     typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
         VkStructureType                             sType;
@@ -85,10 +78,7 @@ New Structs
 
 New Functions
 
-    TODO:
-        - Queries to determine support for external image layouts (and possibly
-          memory-bound external images too) on particular physical devices and
-          queue families.
+    None
 
 Description
 
@@ -130,6 +120,22 @@ Issues
 
        Proposed Solution: Defer it to a future extension. On systems that lack
        such an extension, permit implicitly defined system-specific behavior.
+
+    4. Should this extension be merged with
+       VK_CHROMIUM_drm_external_image_format_properties?
+
+       UNRESOLVED. The two extensions are so closely related that a merger
+       feels natural. The Vulkan 1.0.32 spec, however, recommends they be kept
+       separate.
+
+       From the Vulkan 1.0.32 spec:
+
+           For a set of global functionality that provides new instance-level
+           and device-level commands, and can be enabled for a subset of
+           devices, it is recommended that the functionality be partitioned
+           across two extensions—one for the instance-level functionality, and
+           one for the device-specific functionality. In this latter case, it
+           is generally recommended that the two extensions have unique names.
 
 References
 

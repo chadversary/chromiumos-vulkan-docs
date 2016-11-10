@@ -36,6 +36,13 @@
 
 #define unused __attribute__((unused))
 
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
+
+#define for_each_bit(b, bits) \
+    for (__typeof__(bits) __bits = (bits); \
+         (b) = __builtin_ffs(__bits) - 1, __bits != 0; \
+         __bits &= ~(1 << (b)))
+
 static void
 checkVkResult(VkResult result)
 {
@@ -109,6 +116,136 @@ exampleImportDmaBufMemory(
     *pMemoryTypeIndex = allocateInfo.memoryTypeIndex;
     *pMemorySize = allocateInfo.allocationSize;
     return VK_SUCCESS;
+}
+
+static VkResult unused
+exampleGetExternalImageLayoutCount(
+        VkPhysicalDevice physicalDevice,
+        uint32_t *pCount)
+{
+    VkResult result;
+
+    VkDrmExternalImageFormatPropertiesCHROMIUM externalProperties = {
+        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
+        .pNext = NULL,
+
+        // Parameters 'externalLayoutCount' and 'pExternalLayouts' behave
+        // similarly to other array-length/array pairs in the core Vulkan API,
+        // such as that in vkEnumeratePhysicalDevices.
+        .externalLayoutCount = 0,
+        .pExternalLayouts = NULL,
+    };
+
+    VkImageFormatProperties2CHROMIUM baseProperties = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES2_CHROMIUM,
+        .pNext = &externalProperties,
+    };
+
+    // This example hard-codes the query's assertions (format, usage, etc). In
+    // real usage, the query's assertions would be application-dependent.
+    //
+    // When querying VkDrmExternalImageFormatPropertiesCHROMIUM, the given
+    // tiling must be VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM.
+    result = vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
+            physicalDevice,
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_IMAGE_TYPE_2D,
+            VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                VK_IMAGE_USAGE_SAMPLED_BIT |
+                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            (VkImageCreateFlags) 0,
+            &baseProperties);
+    if (result < 0)
+        return result;
+
+    *pCount = externalProperties.externalLayoutCount;
+    return VK_SUCCESS;
+}
+
+static VkResult unused
+examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
+{
+    VkResult result;
+
+    VkDrmExternalImageLayoutCHROMIUM externalLayouts[64];
+
+    // Initialize externalLayouts.
+    for (uint32_t i = 0; i < ARRAY_LENGTH(externalLayouts); ++i) {
+        externalLayouts[i] = (VkDrmExternalImageLayoutCHROMIUM) {
+            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM,
+            .pNext = NULL,
+            // Remainder will be filled by
+            // vkGetPhysicalDeviceImageFormatProperties2CHROMIUM.
+        };
+    }
+
+    // If the number of available of layouts exceeds the array length,
+    // vkGetPhysicalDeviceImageFormatProperties2CHROMIUM will return
+    // VK_INCOMPLETE. Instead of hard-coding an array length, we could have
+    // first queried the number of available external layouts and allocated
+    // accordingly; see exampleGetExternalImageLayoutCount.
+    VkDrmExternalImageFormatPropertiesCHROMIUM externalProperties = {
+        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
+        .pNext = NULL,
+
+        // Parameters 'externalLayoutCount' and 'pExternalLayouts' behave
+        // similarly to other array-length/array pairs in the core Vulkan API,
+        // such as that in vkEnumeratePhysicalDevices.
+        .externalLayoutCount = ARRAY_LENGTH(externalLayouts),
+        .pExternalLayouts = externalLayouts,
+    };
+
+    VkImageFormatProperties2CHROMIUM baseProperties = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES2_CHROMIUM,
+        .pNext = &externalProperties,
+        // Remainder will be filled by
+        // vkGetPhysicalDeviceImageFormatProperties2CHROMIUM.
+    };
+
+    // This example hard-codes the query's assertions (format, usage, etc). In
+    // real usage, the query's assertions would be application-dependent.
+    //
+    // When querying VkDrmExternalImageFormatPropertiesCHROMIUM, the given
+    // tiling must be VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM.
+    result = vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
+            physicalDevice,
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_IMAGE_TYPE_2D,
+            VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                VK_IMAGE_USAGE_SAMPLED_BIT |
+                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            (VkImageCreateFlags) 0,
+            &baseProperties);
+    if (result < 0)
+        return result;
+
+    printf("max width: %u\n", baseProperties.imageFormatProperties.maxExtent.width);
+    printf("max height: %u\n", baseProperties.imageFormatProperties.maxExtent.height);
+    printf("max depth: %u\n", baseProperties.imageFormatProperties.maxExtent.depth);
+    printf("max miplevels: %u\n", baseProperties.imageFormatProperties.maxMipLevels);
+    printf("max array layers: %u\n", baseProperties.imageFormatProperties.maxArrayLayers);
+
+    uint32_t b;
+    printf("samples:");
+    for_each_bit(b, baseProperties.imageFormatProperties.sampleCounts) {
+        printf(" %u", 1 << b);
+    }
+    printf("\n");
+
+    printf("drm modifiers:");
+    for (uint32_t i = 0; i < externalProperties.externalLayoutCount; ++i) {
+        printf(" 0x%08lx", externalProperties.pExternalLayouts[i].drmModifier);
+    }
+    if (result == VK_INCOMPLETE) {
+        printf(" ...");
+    }
+    printf("\n");
+
+    return result;
 }
 
 static void unused
