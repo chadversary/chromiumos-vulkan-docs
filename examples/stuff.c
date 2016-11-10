@@ -73,8 +73,8 @@ exampleImportDmaBufMemory(
         // Remainder will be filled by vkDeviceGetDmaBufMemoryTypeProperties.
     };
 
-    result = vkGetDeviceDmaBufPropertiesCHROMIUM(device, dmaBufFd,
-                                                 &dmaBufProperties);
+    result = vkGetDmaBufPropertiesCHROMIUM(device, dmaBufFd,
+                                           &dmaBufProperties);
     if (result != VK_SUCCESS)
         return result;
 

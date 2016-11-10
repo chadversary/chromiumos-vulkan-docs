@@ -85,7 +85,7 @@ typedef struct VkDmaBufMemoryImportInfoCHROMIUM {
 typedef VkResult VKAPI_PTR (*PFN_vkGetDmaBufPropertiesCHROMIUM)(VkDevice device, int dmaBufFd, VkDmaBufPropertiesCHROMIUM* pProperties);
 
 #ifndef VK_NO_PROTOTYPES
-VKAPI_ATTR VkResult VKAPI_CALL vkGetDeviceDmaBufPropertiesCHROMIUM(
+VKAPI_ATTR VkResult VKAPI_CALL vkGetDmaBufPropertiesCHROMIUM(
     VkDevice                        device,
     int                             dmaBufFd,
     VkDmaBufPropertiesCHROMIUM*     pProperties);

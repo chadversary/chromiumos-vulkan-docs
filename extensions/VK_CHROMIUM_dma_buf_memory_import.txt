@@ -77,7 +77,7 @@ New Structs
 
 New Functions
 
-    VkResult vkGetDeviceDmaBufPropertiesCHROMIUM(
+    VkResult vkGetDmaBufPropertiesCHROMIUM(
         VkDevice                        device,
         int                             dmaBufFd,
         VkDmaBufPropertiesCHROMIUM*     pProperties);
