@@ -29,7 +29,7 @@ IP Status
 Dependencies
 
     This extension is written against the Vulkan 1.0.32 specification [1].
-    Requires VK_CHROMIUM_drm_external_image_format_properties.
+    Requires VK_CHROMIUM_image_format_properties2
 
 Contributors
 
@@ -52,6 +52,7 @@ New Object Types
 New Enum Constants
 
     Extends VkStructureType
+        VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM
         VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM
 
     Extends VkImageTiling
@@ -68,6 +69,14 @@ New Enums
     None
 
 New Structs
+
+    // Extends VkImageFormatProperties2CHROMIUM
+    typedef struct VkDrmExternalImageFormatPropertiesCHROMIUM {
+        VkStructureType     sType;
+        void*               pNext;
+        uint32_t            drmFormatModifierCount;
+        uint64_t*           pDrmFormatModifiers;
+    } VkDrmExternalImageFormatPropertiesCHROMIUM;
 
     // Extends VkImageCreateInfo
     typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
@@ -121,14 +130,11 @@ Issues
        Proposed Solution: Defer it to a future extension. On systems that lack
        such an extension, permit implicitly defined system-specific behavior.
 
-    4. Should this extension be merged with
-       VK_CHROMIUM_drm_external_image_format_properties?
+    4. Should this extension be split into a separate instance extension and
+       device extension?
 
-       UNRESOLVED. The two extensions are so closely related that a merger
-       feels natural. The Vulkan 1.0.32 spec, however, recommends they be kept
-       separate.
-
-       From the Vulkan 1.0.32 spec:
+       BACKGROUND: The Vulkan 1.0.32 spec, however, recommends this extension
+       be split.  From the Vulkan 1.0.32 spec:
 
            For a set of global functionality that provides new instance-level
            and device-level commands, and can be enabled for a subset of
@@ -136,6 +142,13 @@ Issues
            across two extensions—one for the instance-level functionality, and
            one for the device-specific functionality. In this latter case, it
            is generally recommended that the two extensions have unique names.
+
+       UNRESOLVED: Even though the Vulkan spec recommends splitting this
+       extension, a split results in two very awkward, seemingly incomplete
+       extensions.  The features exposed here are most naturally expressed as
+       a single extension. Therefore, for convenience, now let's keep this as
+       a single spec for now and revisit this issue before finalizing the
+       extension spec.
 
 References
 
