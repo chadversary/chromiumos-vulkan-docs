@@ -71,9 +71,9 @@ New Structs
 
     // Extends VkImageCreateInfo
     typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
-        VkStructureType                             sType;
-        const void*                                 pNext;
-        const VkDrmExternalImageLayoutCHROMIUM*     externalLayout;
+        VkStructureType     sType;
+        const void*         pNext;
+        uint64_t            drmFormatModifier;
     } VkDrmExternalImageCreateInfoCHROMIUM;
 
 New Functions

@@ -119,7 +119,7 @@ exampleImportDmaBufMemory(
 }
 
 static VkResult unused
-exampleGetExternalImageLayoutCount(
+exampleGetDrmFormatModifierCount(
         VkPhysicalDevice physicalDevice,
         uint32_t *pCount)
 {
@@ -129,11 +129,11 @@ exampleGetExternalImageLayoutCount(
         .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
         .pNext = NULL,
 
-        // Parameters 'externalLayoutCount' and 'pExternalLayouts' behave
+        // Parameters 'drmFormatModifierCount' and 'pDrmFormatModifiers' behave
         // similarly to other array-length/array pairs in the core Vulkan API,
         // such as that in vkEnumeratePhysicalDevices.
-        .externalLayoutCount = 0,
-        .pExternalLayouts = NULL,
+        .drmFormatModifierCount = 0,
+        .pDrmFormatModifiers = NULL,
     };
 
     VkImageFormatProperties2CHROMIUM baseProperties = {
@@ -160,7 +160,7 @@ exampleGetExternalImageLayoutCount(
     if (result < 0)
         return result;
 
-    *pCount = externalProperties.externalLayoutCount;
+    *pCount = externalProperties.drmFormatModifierCount;
     return VK_SUCCESS;
 }
 
@@ -169,32 +169,22 @@ examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
 {
     VkResult result;
 
-    VkDrmExternalImageLayoutCHROMIUM externalLayouts[64];
-
-    // Initialize externalLayouts.
-    for (uint32_t i = 0; i < ARRAY_LENGTH(externalLayouts); ++i) {
-        externalLayouts[i] = (VkDrmExternalImageLayoutCHROMIUM) {
-            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM,
-            .pNext = NULL,
-            // Remainder will be filled by
-            // vkGetPhysicalDeviceImageFormatProperties2CHROMIUM.
-        };
-    }
-
-    // If the number of available of layouts exceeds the array length,
+    // If the number available drm modifier count exceeds the array length,
     // vkGetPhysicalDeviceImageFormatProperties2CHROMIUM will return
     // VK_INCOMPLETE. Instead of hard-coding an array length, we could have
-    // first queried the number of available external layouts and allocated
-    // accordingly; see exampleGetExternalImageLayoutCount.
+    // first queried the available modifier count and allocated
+    // accordingly; see exampleGetDrmFormatModifierCount.
+    uint64_t drmFormatModifiers[64];
+
     VkDrmExternalImageFormatPropertiesCHROMIUM externalProperties = {
         .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
         .pNext = NULL,
 
-        // Parameters 'externalLayoutCount' and 'pExternalLayouts' behave
+        // Parameters 'drmFormatModifierCount' and 'pDrmFormatModifiers' behave
         // similarly to other array-length/array pairs in the core Vulkan API,
         // such as that in vkEnumeratePhysicalDevices.
-        .externalLayoutCount = ARRAY_LENGTH(externalLayouts),
-        .pExternalLayouts = externalLayouts,
+        .drmFormatModifierCount = ARRAY_LENGTH(drmFormatModifiers),
+        .pDrmFormatModifiers = drmFormatModifiers,
     };
 
     VkImageFormatProperties2CHROMIUM baseProperties = {
@@ -237,8 +227,8 @@ examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
     printf("\n");
 
     printf("drm modifiers:");
-    for (uint32_t i = 0; i < externalProperties.externalLayoutCount; ++i) {
-        printf(" 0x%08lx", externalProperties.pExternalLayouts[i].drmModifier);
+    for (uint32_t i = 0; i < externalProperties.drmFormatModifierCount; ++i) {
+        printf(" 0x%08lx", externalProperties.pDrmFormatModifiers[i]);
     }
     if (result == VK_INCOMPLETE) {
         printf(" ...");
@@ -256,27 +246,27 @@ exampleBindDmaBufImage(
 {
     VkResult result;
 
-    // This example hard-codes the image's external layout.  In real usage, the
-    // image's external layout would be negotiated between the consumer and
+    // This example hard-codes the image's drm format modifier.  In real usage,
+    // the drm format modifier would be negotiated between the consumer and
     // producer during an initial setup phase.
+    //
+    // Observe that this struct omits stride. Stride is omitted because it's
+    // meaningless for many layouts, such as layouts that contain auxiliary
+    // surfaces. Instead, the memory layout of an external image (including its
+    // stride, when applicable) is defined by an externally documented
+    // vendor-specific ABI. The expectation is that the vendor-specific ABI
+    // document will define a unique memory layout for each valid
+    // combination of
+    //
+    //      - VkPhysicalDeviceProperties::vendorID
+    //      - VkPhysicalDeviceProperties::deviceID
+    //      - VkImageCreateInfo
+    //      - VkDrmExternalImageCreateInfoCHROMIUM::drmFormatModifier
+    //
     const VkDrmExternalImageCreateInfoCHROMIUM externalInfo = {
         .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM,
         .pNext = NULL,
-        .externalLayout = &(VkDrmExternalImageLayoutCHROMIUM) {
-            // Observe that this struct omits stride. Stride is omitted
-            // because it's meaningless for many layouts, such as layouts
-            // that contain auxiliary surfaces. Instead, the memory layout of
-            // an external image (including its stride, when applicable) is
-            // defined by an externally documented vendor-specific ABI. The
-            // expectation is that the vendor-specific ABI document will
-            // define a unique memory layout for each valid combination of
-            // (VkImageCreateInfo, VkDrmExternalImageCreateInfoCHROMIUM,
-            // VkPhysicalDeviceSparseProperties::{vendorID,deviceID}).
-            .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM,
-            .pNext = NULL,
-            .drmFourCC = DRM_FORMAT_RGBA8888,
-            .drmModifier = I915_FORMAT_MOD_Yf_TILED,
-        },
+        .drmFormatModifier = I915_FORMAT_MOD_Yf_TILED,
     };
 
     // This example hard-codes much of VkImageCreateInfo. In real usage, this
@@ -384,7 +374,7 @@ exampleAcqureExternalImageWithPipelineBarrier(
 
     // This barrier acquires ownership of the image through a layout
     // transition.  The source layout is the external layout defined by
-    // VkDrmExternalImageCreateInfoCHROMIUM::externalLayout; the destination
+    // VkDrmExternalImageCreateInfoCHROMIUM::drmFormatModifier; the destination
     // layout is a normal Vulkan layout.
     //
     // Observe that 'srcAccessMask' and 'oldLayout' refer to external usage.
@@ -475,7 +465,7 @@ exampleReleaseExternalImageWithPipelineBarrier(
     // This barrier releases ownership of the image through a layout
     // transition.  The source layout is a normal Vulkan layout; the
     // destination layout the external layout defined by
-    // VkDrmExternalImageCreateInfoCHROMIUM::externalLayout.
+    // VkDrmExternalImageCreateInfoCHROMIUM::drmFormatModifier.
     //
     // Observe that 'dstAccessMask' and 'newLayout' refer to external usage.
     const VkImageMemoryBarrier barrier = {

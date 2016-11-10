@@ -51,7 +51,6 @@ New Enum Constants
 
     Extends VkStructureType
       VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM
-      VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM
 
     Extends VkImageTiling
         VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
@@ -65,20 +64,12 @@ New Enums
 
 New Structs
 
-   typedef struct VkDrmExternalImageLayoutCHROMIUM {
-       VkStructureType      sType;
-       const void*          pNext;
-       uint32_t             drmFourCC;
-       uint64_t             drmModifier;
-   } VkDrmExternalImageLayoutCHROMIUM;
-
-   // Extends VkImageFormatProperties2CHROMIUM
-   typedef struct VkDrmExternalImageFormatPropertiesCHROMIUM {
-       VkStructureType                      sType;
-       void*                                pNext;
-       uint32_t                             externalLayoutCount;
-       VkDrmExternalImageLayoutCHROMIUM     *pExternalLayouts;
-   } VkDrmExternalImageFormatPropertiesCHROMIUM;
+    typedef struct VkDrmExternalImageFormatPropertiesCHROMIUM {
+        VkStructureType     sType;
+        void*               pNext;
+        uint32_t            drmFormatModifierCount;
+        uint64_t*           pDrmFormatModifiers;
+    } VkDrmExternalImageFormatPropertiesCHROMIUM;
 
 New Functions
 

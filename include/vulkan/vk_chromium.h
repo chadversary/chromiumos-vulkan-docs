@@ -96,22 +96,14 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetDeviceDmaBufPropertiesCHROMIUM(
 #define VK_CHROMIUM_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_EXTENSION_NAME "VK_CHROMIUM_drm_external_image_format_properties"
 
 #define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM ((VkStructureType) 0) // TODO
-#define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_LAYOUT_CHROMIUM ((VkStructureType) 0) // TODO
 #define VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM ((VkImageTiling) 0) // TODO
 #define VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM ((VkImageLayout) 0) // TODO
 
-typedef struct VkDrmExternalImageLayoutCHROMIUM {
-    VkStructureType                             sType;
-    const void*                                 pNext;
-    uint32_t                                    drmFourCC;
-    uint64_t                                    drmModifier;
-} VkDrmExternalImageLayoutCHROMIUM;
-
 typedef struct VkDrmExternalImageFormatPropertiesCHROMIUM {
-    VkStructureType                             sType;
-    void*                                       pNext;
-    uint32_t                                    externalLayoutCount;
-    VkDrmExternalImageLayoutCHROMIUM*           pExternalLayouts;
+    VkStructureType     sType;
+    void*               pNext;
+    uint32_t            drmFormatModifierCount;
+    uint64_t*           pDrmFormatModifiers;
 } VkDrmExternalImageFormatPropertiesCHROMIUM;
 
 #define VK_CHROMIUM_drm_external_image
@@ -125,9 +117,9 @@ typedef struct VkDrmExternalImageFormatPropertiesCHROMIUM {
 
 // Extends VkImageCreateInfo
 typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
-    VkStructureType                             sType;
-    const void*                                 pNext;
-    const VkDrmExternalImageLayoutCHROMIUM*     externalLayout;
+    VkStructureType     sType;
+    const void*         pNext;
+    uint64_t            drmFormatModifier;
 } VkDrmExternalImageCreateInfoCHROMIUM;
 
 #ifdef __cplusplus
