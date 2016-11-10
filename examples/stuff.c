@@ -125,8 +125,8 @@ exampleGetDrmFormatModifierCount(
 {
     VkResult result;
 
-    VkDrmExternalImageFormatPropertiesCHROMIUM externalProperties = {
-        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
+    VkExternalDrmImageFormatPropertiesCHROMIUM externalProperties = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
         .pNext = NULL,
 
         // Parameters 'drmFormatModifierCount' and 'pDrmFormatModifiers' behave
@@ -144,13 +144,13 @@ exampleGetDrmFormatModifierCount(
     // This example hard-codes the query's assertions (format, usage, etc). In
     // real usage, the query's assertions would be application-dependent.
     //
-    // When querying VkDrmExternalImageFormatPropertiesCHROMIUM, the given
-    // tiling must be VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM.
+    // When querying VkExternalDrmImageFormatPropertiesCHROMIUM, the given
+    // tiling must be VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM.
     result = vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
             physicalDevice,
             VK_FORMAT_R8G8B8A8_UNORM,
             VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
+            VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                 VK_IMAGE_USAGE_SAMPLED_BIT |
@@ -176,8 +176,8 @@ examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
     // accordingly; see exampleGetDrmFormatModifierCount.
     uint64_t drmFormatModifiers[64];
 
-    VkDrmExternalImageFormatPropertiesCHROMIUM externalProperties = {
-        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
+    VkExternalDrmImageFormatPropertiesCHROMIUM externalProperties = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_FORMAT_PROPERTIES_CHROMIUM,
         .pNext = NULL,
 
         // Parameters 'drmFormatModifierCount' and 'pDrmFormatModifiers' behave
@@ -197,13 +197,13 @@ examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
     // This example hard-codes the query's assertions (format, usage, etc). In
     // real usage, the query's assertions would be application-dependent.
     //
-    // When querying VkDrmExternalImageFormatPropertiesCHROMIUM, the given
-    // tiling must be VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM.
+    // When querying VkExternalDrmImageFormatPropertiesCHROMIUM, the given
+    // tiling must be VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM.
     result = vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
             physicalDevice,
             VK_FORMAT_R8G8B8A8_UNORM,
             VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
+            VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                 VK_IMAGE_USAGE_SAMPLED_BIT |
@@ -261,10 +261,10 @@ exampleBindDmaBufImage(
     //      - VkPhysicalDeviceProperties::vendorID
     //      - VkPhysicalDeviceProperties::deviceID
     //      - VkImageCreateInfo
-    //      - VkDrmExternalImageCreateInfoCHROMIUM::drmFormatModifier
+    //      - VkExternalDrmImageCreateInfoCHROMIUM::drmFormatModifier
     //
-    const VkDrmExternalImageCreateInfoCHROMIUM externalInfo = {
-        .sType = VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM,
+    const VkExternalDrmImageCreateInfoCHROMIUM externalInfo = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_CREATE_INFO_CHROMIUM,
         .pNext = NULL,
         .drmFormatModifier = I915_FORMAT_MOD_Yf_TILED,
     };
@@ -282,17 +282,17 @@ exampleBindDmaBufImage(
     //
     // An "external image" is any VkImage created with
     //     .
-    //     VkImageCreateInfo::pNext is VkDrmExternalImageCreateInfoCHROMIUM
-    //     VkImageCreateInfo::initalLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM
-    //     VkImageCreateInfo::tiling == VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
+    //     VkImageCreateInfo::pNext is VkExternalDrmImageCreateInfoCHROMIUM
+    //     VkImageCreateInfo::initalLayout == VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM
+    //     VkImageCreateInfo::tiling == VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM
     //     .
     // The image's tiling and 'external layout' is defined by
-    // VkDrmExternalImageCreateInfoCHROMIUM.
+    // VkExternalDrmImageCreateInfoCHROMIUM.
     //
     // An external image has two layouts at all times: an 'external layout',
     // which was defined during image creation and is immutable; and a current
     // layout, which can be either the image's external layout, referenced by
-    // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM, or a normal Vulkan layout, such
+    // VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM, or a normal Vulkan layout, such
     // as VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL.
     //
     // When the image's current layout is a non-external layout, Vulkan "owns"
@@ -319,7 +319,7 @@ exampleBindDmaBufImage(
         .mipLevels = 1,
         .arrayLayers = 1,
         .samples = 1,
-        .tiling = VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM,
+        .tiling = VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
         .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                  VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                  VK_IMAGE_USAGE_SAMPLED_BIT |
@@ -327,7 +327,7 @@ exampleBindDmaBufImage(
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         .queueFamilyIndexCount = 1,
         .pQueueFamilyIndices = (uint32_t[]) { 0 },
-        .initialLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+        .initialLayout = VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM,
     };
 
     // Create the external VkImage. Observe that the image, like any
@@ -341,9 +341,9 @@ exampleBindDmaBufImage(
     // To bind a VkImage to a dma_buf-imported VkDeviceMemory, the image must
     // have been created with
     //     .
-    //     VkImageCreateInfo::pNext is VkDrmExternalImageCreateInfoCHROMIUM
-    //     VkImageCreateInfo::initalLayout == VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM
-    //     VkImageCreateInfo::tiling == VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM
+    //     VkImageCreateInfo::pNext is VkExternalDrmImageCreateInfoCHROMIUM
+    //     VkImageCreateInfo::initalLayout == VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM
+    //     VkImageCreateInfo::tiling == VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM
     //
     // This example hard-code the image's offset into the dma_buf. In real
     // usage, the offset would be negotiated between consumer and producer.
@@ -374,17 +374,17 @@ exampleAcqureExternalImageWithPipelineBarrier(
 
     // This barrier acquires ownership of the image through a layout
     // transition.  The source layout is the external layout defined by
-    // VkDrmExternalImageCreateInfoCHROMIUM::drmFormatModifier; the destination
+    // VkExternalDrmImageCreateInfoCHROMIUM::drmFormatModifier; the destination
     // layout is a normal Vulkan layout.
     //
     // Observe that 'srcAccessMask' and 'oldLayout' refer to external usage.
     const VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .pNext = NULL,
-        .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
+        .srcAccessMask = VK_ACCESS_EXTERNAL_DRM_CHROMIUM,
         .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
                          VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+        .oldLayout = VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM,
         .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = queueFamilyIndex,
@@ -465,16 +465,16 @@ exampleReleaseExternalImageWithPipelineBarrier(
     // This barrier releases ownership of the image through a layout
     // transition.  The source layout is a normal Vulkan layout; the
     // destination layout the external layout defined by
-    // VkDrmExternalImageCreateInfoCHROMIUM::drmFormatModifier.
+    // VkExternalDrmImageCreateInfoCHROMIUM::drmFormatModifier.
     //
     // Observe that 'dstAccessMask' and 'newLayout' refer to external usage.
     const VkImageMemoryBarrier barrier = {
         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
         .pNext = NULL,
         .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .dstAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
+        .dstAccessMask = VK_ACCESS_EXTERNAL_DRM_CHROMIUM,
         .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        .newLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+        .newLayout = VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM,
         .srcQueueFamilyIndex = queueFamilyIndex,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .image = externalImage,
@@ -556,7 +556,7 @@ exampleAcquireExternalImageWithSubpassTransition(
                         .samples = 1,
                         .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                        .initialLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+                        .initialLayout = VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM,
                         .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     },
                 },
@@ -575,7 +575,7 @@ exampleAcquireExternalImageWithSubpassTransition(
                                 // ensures that the image transitions from the
                                 // previous layout
                                 // (VkAttachmentDescription::initialLayout =
-                                // VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM) to
+                                // VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM) to
                                 // the subpass's layout before the subpass
                                 // begins execution.
                                 .attachment = 0,
@@ -599,7 +599,7 @@ exampleAcquireExternalImageWithSubpassTransition(
                         // TODO: Maybe allow a looser srcStageMask?
                         .srcSubpass = VK_SUBPASS_EXTERNAL,
                         .srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                        .srcAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
+                        .srcAccessMask = VK_ACCESS_EXTERNAL_DRM_CHROMIUM,
 
                         .dstSubpass = 0, // this subpass
                         .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -721,7 +721,7 @@ exampleReleaseExternalImageWithSubpassTransition(
                         // This layout transition releases ownership of the
                         // external image.
                         .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                        .finalLayout = VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM,
+                        .finalLayout = VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM,
                     },
                 },
                 .subpassCount = 1,
@@ -759,7 +759,7 @@ exampleReleaseExternalImageWithSubpassTransition(
 
                         .dstSubpass = VK_SUBPASS_EXTERNAL,
                         .dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                        .dstAccessMask = VK_ACCESS_DRM_EXTERNAL_CHROMIUM,
+                        .dstAccessMask = VK_ACCESS_EXTERNAL_DRM_CHROMIUM,
 
                         // VK_DEPENDENCY_BY_REGION_BIT is illegal for external images.
                         .dependencyFlags = 0,

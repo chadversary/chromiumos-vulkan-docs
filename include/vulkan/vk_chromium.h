@@ -91,29 +91,29 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetDmaBufPropertiesCHROMIUM(
     VkDmaBufPropertiesCHROMIUM*     pProperties);
 #endif
 
-#define VK_CHROMIUM_drm_external_image
-#define VK_CHROMIUM_DRM_EXTERNAL_IMAGE_SPEC_VERSION 0
-#define VK_CHROMIUM_DRM_EXTERNAL_IMAGE_EXTENSION_NAME "VK_CHROMIUM_drm_external_image"
+#define VK_CHROMIUM_external_drm_image
+#define VK_CHROMIUM_EXTERNAL_DRM_IMAGE_SPEC_VERSION 0
+#define VK_CHROMIUM_EXTERNAL_DRM_IMAGE_EXTENSION_NAME "VK_CHROMIUM_external_drm_image"
 
-#define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_CREATE_INFO_CHROMIUM ((VkStructureType) 0) // TODO
-#define VK_STRUCTURE_TYPE_DRM_EXTERNAL_IMAGE_FORMAT_PROPERTIES_CHROMIUM ((VkStructureType) 0) // TODO
-#define VK_IMAGE_TILING_DRM_EXTERNAL_CHROMIUM ((VkImageTiling) 0) // TODO
-#define VK_IMAGE_LAYOUT_DRM_EXTERNAL_CHROMIUM ((VkImageLayout) 0) // TODO
-#define VK_ACCESS_DRM_EXTERNAL_CHROMIUM ((VkAccessFlagBits) 0) // TODO
+#define VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_CREATE_INFO_CHROMIUM ((VkStructureType) 0) // TODO
+#define VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_FORMAT_PROPERTIES_CHROMIUM ((VkStructureType) 0) // TODO
+#define VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM ((VkImageTiling) 0) // TODO
+#define VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM ((VkImageLayout) 0) // TODO
+#define VK_ACCESS_EXTERNAL_DRM_CHROMIUM ((VkAccessFlagBits) 0) // TODO
 
-typedef struct VkDrmExternalImageFormatPropertiesCHROMIUM {
+typedef struct VkExternalDrmImageFormatPropertiesCHROMIUM {
     VkStructureType     sType;
     void*               pNext;
     uint32_t            drmFormatModifierCount;
     uint64_t*           pDrmFormatModifiers;
-} VkDrmExternalImageFormatPropertiesCHROMIUM;
+} VkExternalDrmImageFormatPropertiesCHROMIUM;
 
 // Extends VkImageCreateInfo
-typedef struct VkDrmExternalImageCreateInfoCHROMIUM {
+typedef struct VkExternalDrmImageCreateInfoCHROMIUM {
     VkStructureType     sType;
     const void*         pNext;
     uint64_t            drmFormatModifier;
-} VkDrmExternalImageCreateInfoCHROMIUM;
+} VkExternalDrmImageCreateInfoCHROMIUM;
 
 #ifdef __cplusplus
 }
