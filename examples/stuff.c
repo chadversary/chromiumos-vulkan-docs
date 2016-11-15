@@ -148,14 +148,18 @@ exampleGetDrmFormatModifierCount(
     // tiling must be VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM.
     result = vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
             physicalDevice,
-            VK_FORMAT_R8G8B8A8_UNORM,
-            VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
-            VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-                VK_IMAGE_USAGE_SAMPLED_BIT |
-                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            (VkImageCreateFlags) 0,
+            &(VkImageFormatPropertiesInfo2CHROMIUM) {
+                .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_INFO2_CHROMIUM,
+                .pNext = NULL,
+                .format = VK_FORMAT_R8G8B8A8_UNORM,
+                .type = VK_IMAGE_TYPE_2D,
+                .tiling = VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
+                .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                         VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                         VK_IMAGE_USAGE_SAMPLED_BIT |
+                         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                .flags = 0,
+            },
             &baseProperties);
     if (result < 0)
         return result;
@@ -255,14 +259,18 @@ examplePrintExternalImageProperties(VkPhysicalDevice physicalDevice)
     // tiling must be VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM.
     result = vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
             physicalDevice,
-            VK_FORMAT_R8G8B8A8_UNORM,
-            VK_IMAGE_TYPE_2D,
-            VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
-            VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-                VK_IMAGE_USAGE_SAMPLED_BIT |
-                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            (VkImageCreateFlags) 0,
+            &(VkImageFormatPropertiesInfo2CHROMIUM) {
+                .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_INFO2_CHROMIUM,
+                .pNext = NULL,
+                .format = VK_FORMAT_R8G8B8A8_UNORM,
+                .type = VK_IMAGE_TYPE_2D,
+                .tiling = VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM,
+                .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                         VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+                         VK_IMAGE_USAGE_SAMPLED_BIT |
+                         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                .flags = 0,
+            },
             &baseProperties);
     if (result < 0)
         return result;

@@ -49,6 +49,7 @@ New Object Types
 New Enum Constants
 
     Extends VkStructureType
+        VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_INFO2_CHROMIUM
         VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES2_CHROMIUM
 
 New Enums
@@ -56,6 +57,16 @@ New Enums
     None
 
 New Structs
+
+    typedef struct VkImageFormatPropertiesInfo2CHROMIUM {
+        VkStructureType             sType;
+        const void*                 pNext;
+        VkFormat                    format;
+        VkImageType                 type;
+        VkImageTiling               tiling;
+        VkImageUsageFlags           usage;
+        VkImageCreateFlags          flags;
+    } VkImageFormatPropertiesInfo2CHROMIUM;
 
     typedef struct VkImageFormatProperties2CHROMIUM {
         VkStructureType             sType;
@@ -66,13 +77,9 @@ New Structs
 New Functions
 
     VkResult vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
-        VkPhysicalDevice                    physicalDevice,
-        VkFormat                            format,
-        VkImageType                         type,
-        VkImageTiling                       tiling,
-        VkImageUsageFlags                   usage,
-        VkImageCreateFlags                  flags,
-        VkImageFormatProperties2CHROMIUM*   pImageFormatProperties);
+        VkPhysicalDevice                                physicalDevice,
+        const VkImageFormatPropertiesInfo2CHROMIUM*     pInfo,
+        VkImageFormatProperties2CHROMIUM*               pProperties);
 
 Description
 
