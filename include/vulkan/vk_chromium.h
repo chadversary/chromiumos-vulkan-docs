@@ -53,7 +53,7 @@ typedef struct VkImageFormatPropertiesInfo2CHROMIUM {
 
 typedef struct VkImageFormatProperties2CHROMIUM {
     VkStructureType             sType;
-    const void*                 pNext;
+    void*                       pNext;
     VkImageFormatProperties     imageFormatProperties;
 } VkImageFormatProperties2CHROMIUM;
 
