@@ -135,12 +135,22 @@ typedef struct VkDmaBufImageFormatPropertiesCHROMIUM {
 #define VK_CHROMIUM_DMA_BUF_IMAGE_IMPORT_EXTENSION_NAME "VK_CHROMIUM_dma_buf_image_import"
 
 #define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_IMPORT_INFO_CHROMIUM ((VkStructureType) 0) // TODO
+#define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_IMPORT_PLANE_INFO_CHROMIUM ((VkStructureType) 0) // TODO
+
+typedef struct VkDmaBufImageImportPlaneInfoCHROMIUM {
+    VkStructureType     sType;
+    const void*         pNext;
+    VkDeviceSize        offset;
+    VkDeviceSize        rowPitch;
+} VkDmaBufImageImportPlaneInfoCHROMIUM;
 
 // Extends VkImageCreateInfo
 typedef struct VkDmaBufImageImportInfoCHROMIUM {
-    VkStructureType     sType;
-    const void*         pNext;
-    uint64_t            drmFormatModifier;
+    VkStructureType                                 sType;
+    const void*                                     pNext;
+    uint64_t                                        drmFormatModifier;
+    uint32_t                                        planeCount;
+    const VkDmaBufImageImportPlaneInfoCHROMIUM*     pPlanes;
 } VkDmaBufImageImportInfoCHROMIUM;
 
 #ifdef __cplusplus

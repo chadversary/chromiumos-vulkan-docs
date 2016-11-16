@@ -312,23 +312,29 @@ exampleBindDmaBufImage(
     // the drm format modifier would be negotiated between the consumer and
     // producer during an initial setup phase.
     //
-    // Observe that this struct omits stride. Stride is omitted because it's
-    // meaningless for many layouts, such as layouts that contain auxiliary
-    // surfaces. Instead, the memory layout of a dma_buf image (including its
-    // stride, when applicable) is defined by an externally documented
-    // vendor-specific ABI. The expectation is that the vendor-specific ABI
-    // document will define a unique memory layout for each valid
-    // combination of
-    //
-    //      - VkPhysicalDeviceProperties::vendorID
-    //      - VkPhysicalDeviceProperties::deviceID
-    //      - VkImageCreateInfo
-    //      - VkDmaBufImageImportInfoCHROMIUM::drmFormatModifier
+    // Observe that this struct omits many details that would be needed to
+    // define the memory layout of a complex (mipmapped, array, multisampled,
+    // etc) image. It merely defines a drm format modifier per image, and
+    // offset and pitch per plane. That information should be sufficient to
+    // define the memory layout of simple (non-mipmapped, non-array,
+    // single-sampled, etc) image. The larger problem of how to import the
+    // memory layout of complex images during vkCreateImage is not solved here;
+    // that feature is deferred to future extensions.
+    // memory layout of imported images
     //
     const VkDmaBufImageImportInfoCHROMIUM importInfo = {
         .sType = VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_IMPORT_INFO_CHROMIUM,
         .pNext = NULL,
         .drmFormatModifier = I915_FORMAT_MOD_Yf_TILED,
+        .planeCount = 1,
+        .pPlanes = (VkDmaBufImageImportPlaneInfoCHROMIUM[]) {
+            {
+                .sType = VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_IMPORT_PLANE_INFO_CHROMIUM,
+                .pNext = NULL,
+                .offset = 0,
+                .rowPitch = 1 << 16,
+            },
+        },
     };
 
     // This example hard-codes much of VkImageCreateInfo. In real usage, this

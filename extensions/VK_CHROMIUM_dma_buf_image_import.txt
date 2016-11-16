@@ -53,6 +53,7 @@ New Enum Constants
 
     Extends VkStructureType
         VK_STRUCTURE_TYPE_EXTERNAL_DMA_BUF_IMAGE_IMPORT_INFO_CHROMIUM
+        VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_IMPORT_PLANE_INFO_CHROMIUM
 
 New Enums
 
@@ -60,11 +61,20 @@ New Enums
 
 New Structs
 
-    // Extends VkImageCreateInfo
-    typedef struct VkDmaBufImageImportInfoCHROMIUM {
+    typedef struct VkDmaBufImageImportPlaneInfoCHROMIUM {
         VkStructureType     sType;
         const void*         pNext;
-        uint64_t            drmFormatModifier;
+        VkDeviceSize        offset;
+        VkDeviceSize        rowPitch;
+    } VkDmaBufImageImportPlaneInfoCHROMIUM;
+
+    // Extends VkImageCreateInfo
+    typedef struct VkDmaBufImageImportInfoCHROMIUM {
+        VkStructureType                                 sType;
+        const void*                                     pNext;
+        uint64_t                                        drmFormatModifier;
+        uint32_t                                        planeCount;
+        const VkDmaBufImageImportPlaneInfoCHROMIUM*     pPlanes;
     } VkDmaBufImageImportInfoCHROMIUM;
 
 New Functions
@@ -99,9 +109,25 @@ Issues
        solve this issue with layered extensions or with additional APIs and
        protocols outside Vulkan.
 
-    2. What about planar formats?
+    2. Does this extension support importing planar formats (such as YUV)?
 
-       Proposed Solution: Defer it to a future extension.
+       RESOLVED: No. Vulkan 1.0 defines no planar VkFormat, and this extension
+       is not the appropriate place to do so. Therefore, the ability to import
+       images with planar formats is deferred to to future extensions.
+
+       However, this extension permit importing multiple planes per image
+       because some implementations may require multiple planes even when the
+       VkFormat is non-planar. For example, an implementation may wish to
+       import image metadata in a separate plane (see
+       VK_IMAGE_ASPECT_METADATA_BIT).
+
+    3. Should VkDmaBufImageImportInfoCHROMIUM define a single DRM format
+       modifier for the entire imported image? Or define one per imported
+       plane?
+
+       UNRESOLVED: Discussion is needed. As precedent, though, both
+       EGL_EXT_dma_buf_image_import_modifiers and KMS require a modifier per
+       plane. However, some developers feel that design was a mistake.
 
 References
 
