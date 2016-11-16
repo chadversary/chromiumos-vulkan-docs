@@ -158,7 +158,7 @@ exampleGetDrmFormatModifierCount(
                          VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                          VK_IMAGE_USAGE_SAMPLED_BIT |
                          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                .flags = 0,
+                .createFlags = 0,
             },
             &baseProperties);
     if (result < 0)
@@ -269,7 +269,7 @@ examplePrintDmaBufImageProperties(VkPhysicalDevice physicalDevice)
                          VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                          VK_IMAGE_USAGE_SAMPLED_BIT |
                          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                .flags = 0,
+                .createFlags = 0,
             },
             &baseProperties);
     if (result < 0)

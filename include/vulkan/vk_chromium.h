@@ -48,7 +48,7 @@ typedef struct VkImageFormatPropertiesInfo2CHROMIUM {
     VkImageType                 type;
     VkImageTiling               tiling;
     VkImageUsageFlags           usage;
-    VkImageCreateFlags          flags;
+    VkImageCreateFlags          createFlags;
 } VkImageFormatPropertiesInfo2CHROMIUM;
 
 typedef struct VkImageFormatProperties2CHROMIUM {
