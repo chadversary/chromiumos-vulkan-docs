@@ -57,7 +57,7 @@ typedef struct VkImageFormatProperties2CHROMIUM {
     VkImageFormatProperties     imageFormatProperties;
 } VkImageFormatProperties2CHROMIUM;
 
-typedef VkResult (VKAPI_CALL *PFN_vkGetPhysicalDeviceImageFormatProperties2CHROMIUM)(VkPhysicalDevice physicalDevice, const VkImageFormatPropertiesInfo2CHROMIUM* pInfo, VkImageFormatProperties2CHROMIUM* pImageFormatProperties);
+typedef VkResult (VKAPI_PTR *PFN_vkGetPhysicalDeviceImageFormatProperties2CHROMIUM)(VkPhysicalDevice physicalDevice, const VkImageFormatPropertiesInfo2CHROMIUM* pInfo, VkImageFormatProperties2CHROMIUM* pImageFormatProperties);
 
 #ifndef VK_NO_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkGetPhysicalDeviceImageFormatProperties2CHROMIUM(
@@ -89,7 +89,7 @@ typedef struct VkDmaBufMemoryImportInfoCHROMIUM {
     VkDeviceSize        allocationOffset;
 } VkDmaBufMemoryImportInfoCHROMIUM;
 
-typedef VkResult VKAPI_PTR (*PFN_vkGetDmaBufPropertiesCHROMIUM)(VkDevice device, int dmaBufFd, VkDmaBufPropertiesCHROMIUM* pProperties);
+typedef VkResult (VKAPI_PTR *PFN_vkGetDmaBufPropertiesCHROMIUM)(VkDevice device, int dmaBufFd, VkDmaBufPropertiesCHROMIUM* pProperties);
 
 #ifndef VK_NO_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkGetDmaBufPropertiesCHROMIUM(
@@ -104,7 +104,7 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetDmaBufPropertiesCHROMIUM(
 
 #define VK_MEMORY_PROPERTY_DMA_BUF_EXPORT_CHROMIUM ((VkMemoryPropertyFlagBits) 0) // TODO
 
-typedef VkResult VKAPI_PTR (*PFN_vkGetMemoryDmaBufCHROMIUM)(VkDevice device, VkDeviceMemory memory, int* pDmaBufFd);
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryDmaBufCHROMIUM)(VkDevice device, VkDeviceMemory memory, int* pDmaBufFd);
 
 #ifndef VK_NO_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryDmaBufCHROMIUM(
