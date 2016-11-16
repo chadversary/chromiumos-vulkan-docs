@@ -1,0 +1,105 @@
+Name Strings
+
+    VK_CHROMIUM_dma_buf_image_format_properties
+
+Extension Type
+
+    Instance Extension
+
+Registered Extension Number
+
+    Draft
+
+Status
+
+    Draft
+
+Version
+
+    0 (Early Draft)
+
+Last Modified Date
+
+    See git log.
+
+IP Status
+
+    No known IP claims.
+
+Dependencies
+
+    This extension is written against the Vulkan 1.0.32 specification [1].
+    Requires VK_CHROMIUM_image_format_properties2
+
+Contributors
+
+    Antoine Labour, Google <piman@chromium.org>
+    Chad Versace, Google <chadversary@chromium.org>
+    Kristian Høgsberg Kristensen <hoegsberg@chromium.org>
+
+Contact
+
+    Chad Versace <chadversary@chromium.org>
+
+Overview
+
+    TODO
+
+New Object Types
+
+    None
+
+New Enum Constants
+
+    Extends VkStructureType
+        VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_FORMAT_PROPERTIES_CHROMIUM
+
+    Extends VkImageTiling
+        VK_IMAGE_TILING_EXTERNAL_DMA_BUF_CHROMIUM
+
+    Extends VkImageLayout
+        VK_IMAGE_LAYOUT_EXTERNAL_DMA_BUF_CHROMIUM
+
+    Extends VkAccessFlagBits
+        VK_ACCESS_EXTERNAL_DMA_BUF_CHROMIUM
+
+New Enums
+
+    None
+
+New Structs
+
+    // Extends VkImageFormatProperties2CHROMIUM
+    typedef struct VkDmaBufImageFormatPropertiesCHROMIUM {
+        VkStructureType     sType;
+        void*               pNext;
+        uint32_t            drmFormatModifierCount;
+        uint64_t*           pDrmFormatModifiers;
+    } VkExternalDrmImageFormatPropertiesCHROMIUM;
+
+New Functions
+
+    None
+
+Description
+
+    TODO
+
+Issues
+
+    1. How does the user determine which physical devices and queue families
+       are capable of acquiring and releasing ownership of external dma_buf
+       images?
+
+       TBD.
+
+       Proposed Solution: Defer it to a future extension. On systems that lack
+       such an extension, permit implicitly defined system-specific behavior.
+
+References
+
+    [1]: https://github.com/KhronosGroup/Vulkan-Docs/tree/v1.0-core-20161025
+
+Version History
+
+    See git log.

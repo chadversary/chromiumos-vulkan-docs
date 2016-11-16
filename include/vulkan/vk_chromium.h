@@ -113,30 +113,35 @@ VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryDmaBufCHROMIUM(
     int*                pDmaBufFd);
 #endif
 
-#define VK_CHROMIUM_external_drm_image
-#define VK_CHROMIUM_EXTERNAL_DRM_IMAGE_SPEC_VERSION 0
-#define VK_CHROMIUM_EXTERNAL_DRM_IMAGE_EXTENSION_NAME "VK_CHROMIUM_external_drm_image"
+#define VK_CHROMIUM_dma_buf_image_format_properties
+#define VK_CHROMIUM_DMA_BUF_IMAGE_FORMAT_PROPERTIES_SPEC_VERSION 0
+#define VK_CHROMIUM_DMA_BUF_IMAGE_FORMAT_PROPERTIES_EXTENSION_NAME "VK_CHROMIUM_dma_buf_image_format_properties"
 
-#define VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_CREATE_INFO_CHROMIUM ((VkStructureType) 0) // TODO
-#define VK_STRUCTURE_TYPE_EXTERNAL_DRM_IMAGE_FORMAT_PROPERTIES_CHROMIUM ((VkStructureType) 0) // TODO
-#define VK_IMAGE_TILING_EXTERNAL_DRM_CHROMIUM ((VkImageTiling) 0) // TODO
-#define VK_IMAGE_LAYOUT_EXTERNAL_DRM_CHROMIUM ((VkImageLayout) 0) // TODO
-#define VK_ACCESS_EXTERNAL_DRM_CHROMIUM ((VkAccessFlagBits) 0) // TODO
+#define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_FORMAT_PROPERTIES_CHROMIUM ((VkStructureType) 0) // TODO
+#define VK_IMAGE_TILING_EXTERNAL_DMA_BUF_CHROMIUM ((VkImageTiling) 0) // TODO
+#define VK_IMAGE_LAYOUT_EXTERNAL_DMA_BUF_CHROMIUM ((VkImageLayout) 0) // TODO
+#define VK_ACCESS_EXTERNAL_DMA_BUF_CHROMIUM ((VkAccessFlagBits) 0) // TODO
 
 // Extends VkImageFormatProperties2CHROMIUM
-typedef struct VkExternalDrmImageFormatPropertiesCHROMIUM {
+typedef struct VkDmaBufImageFormatPropertiesCHROMIUM {
     VkStructureType     sType;
     void*               pNext;
     uint32_t            drmFormatModifierCount;
     uint64_t*           pDrmFormatModifiers;
-} VkExternalDrmImageFormatPropertiesCHROMIUM;
+} VkDmaBufImageFormatPropertiesCHROMIUM;
+
+#define VK_CHROMIUM_dma_buf_image_import
+#define VK_CHROMIUM_DMA_BUF_IMAGE_IMPORT_SPEC_VERSION 0 // TODO
+#define VK_CHROMIUM_DMA_BUF_IMAGE_IMPORT_EXTENSION_NAME "VK_CHROMIUM_dma_buf_image_import"
+
+#define VK_STRUCTURE_TYPE_DMA_BUF_IMAGE_IMPORT_INFO_CHROMIUM ((VkStructureType) 0) // TODO
 
 // Extends VkImageCreateInfo
-typedef struct VkExternalDrmImageCreateInfoCHROMIUM {
+typedef struct VkDmaBufImageImportInfoCHROMIUM {
     VkStructureType     sType;
     const void*         pNext;
     uint64_t            drmFormatModifier;
-} VkExternalDrmImageCreateInfoCHROMIUM;
+} VkDmaBufImageImportInfoCHROMIUM;
 
 #ifdef __cplusplus
 }
